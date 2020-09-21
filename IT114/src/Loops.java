@@ -6,7 +6,7 @@ public class Loops
 	{
 		//out.println("1.");
 		int nums[] = {1,2,4,5,6,7};
-		//out.println("2.");
+		out.println("2.");
 		for(int i=0;i<nums.length;i++)
 		{
 			out.println("nums["+i+"] = "+nums[i]);
