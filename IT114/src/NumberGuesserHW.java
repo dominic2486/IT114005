@@ -83,7 +83,6 @@ public class NumberGuesserHW {
 			guess = Integer.parseInt(message);
 		} catch (NumberFormatException e) {
 			System.out.println("You didn't enter a number, please try again");
-
 		}
 		return guess;
 	}
