@@ -89,7 +89,8 @@ public class NumberGuesserHW {
 
 	private void saveLevel() {
 		try (FileWriter fw = new FileWriter(saveFile)) {
-			fw.write("" + level);// here we need to convert it to a String to record correctly
+			//added strikes to carry over from save & base of level to 2486
+			fw.write("" + (level*374) + " " + strikes + " " + number);// here we need to convert it to a String to record correctly
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -105,7 +106,18 @@ public class NumberGuesserHW {
 			while (reader.hasNextLine()) {
 				int _level = reader.nextInt();
 				if (_level > 1) {
-					level = _level;
+					level = _level/374; //change the base for the saved level num to 374, so cant just change it in text without knowing
+				}
+				//added strikes to carry over from save
+				if (reader.hasNextInt()) 
+				{
+					int _strikes = reader.nextInt();
+					strikes = _strikes;
+				}
+				if (reader.hasNextInt()) 
+				{
+					int _number = reader.nextInt();
+					number = _number;
 					break;
 				}
 			}
@@ -120,14 +132,21 @@ public class NumberGuesserHW {
 	}
 
 	void run() {
+		boolean numLoaded = false;
 		try (Scanner input = new Scanner(System.in);) {
 			System.out.println("Welcome to Number Guesser 4.0!");
 			System.out.println("I'll ask you to guess a number between a range, and you'll have " + maxStrikes
 					+ " attempts to guess.");
 			if (loadLevel()) {
-				System.out.println("Successfully loaded level " + level + " let's continue then");
+				System.out.println("Successfully loaded level " + level + " let's continue then with " + strikes + " strikes");
+				numLoaded=true;
 			}
-			number = getNumber(level);
+			//add a check if number was loaded from file
+			if(!numLoaded)
+			{
+				number = getNumber(level);
+				numLoaded=false;
+			}
 			isRunning = true;
 			while (input.hasNext()) {
 				String message = input.nextLine();
@@ -143,6 +162,7 @@ public class NumberGuesserHW {
 			e.printStackTrace();
 			System.out.println(e.getMessage());
 		}
+		saveLevel(); // add a save after it leaves the try catch
 	}
 
 	public static void main(String[] args) {
