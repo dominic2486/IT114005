@@ -7,6 +7,7 @@ import java.awt.event.KeyListener;
 import javax.swing.*;
 
 //import AdminGUI.test;
+// fix when changing ID profile from popup
 
 public class AdminGUI extends JPanel implements ActionListener, KeyListener
 {
@@ -212,7 +213,7 @@ public class AdminGUI extends JPanel implements ActionListener, KeyListener
         		if(choice==0)
         		{
         			signOutButton.doClick();
-        		}
+        		}//@to-do needs fixing
         		else
         			return;
         	}
