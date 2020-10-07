@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import utils.Debug;
 //https://github.com/MattToegel/IT114/blob/SocketSample_C2S2MC/SocketsSample_C2S2MC/src/ServerThread.java
 public class ServerThread extends Thread{
 	private Socket client;
@@ -10,6 +11,7 @@ public class ServerThread extends Thread{
 	private boolean isRunning = false;
 	private SocketServer3 server;//ref to our server so we can call methods on it
 	//more easily
+	
 	public ServerThread(Socket myClient, SocketServer3 server) throws IOException {
 		this.client = myClient;
 		this.server = server;
@@ -34,41 +36,44 @@ public class ServerThread extends Thread{
 	@Override
 	public void run() {
 		try {
+			isRunning = true;
 			String fromClient;
-			while(isRunning 
-					&& !client.isClosed()
-					&& (fromClient = (String)in.readObject()) != null) {//open while loop
-				//TODO make it cooler
+			while (isRunning && // flag to let us easily control the loop
+					!client.isClosed() // breaks the loop if our connection closes
+					&& (fromClient = (String) in.readObject()) != null // reads an object from inputStream (null would
+																		// likely mean a disconnect)
+			) {
+				// keep this one as sysout otherwise if we turn of Debug.log we'll not see
+				// messages
 				System.out.println("Received from client: " + fromClient);
 				server.broadcast(fromClient, this.getId());
-			}//close while loop
-		}
-		catch(Exception e) {
+			} // close while loop
+		} catch (Exception e) {
+			// happens when client disconnects
 			e.printStackTrace();
-			System.out.println("Terminating Client");
-		}
-		finally {
-			//TODO
-			System.out.println("Server Cleanup");
+			Debug.log("Client Disconnected");
+		} finally {
+			isRunning = false;
+			Debug.log("Cleaning up connection for ServerThread");
 			cleanup();
 		}
 	}
 	private void cleanup() {
 		if(in != null) {
 			try {in.close();}
-			catch(IOException e) {System.out.println("Input already closed");}
+			catch(IOException e) {Debug.log("Input already closed");}
 		}
 		if(out != null) {
 			try {out.close();}
-			catch(IOException e) {System.out.println("Client already closed");}
+			catch(IOException e) {Debug.log("Client already closed");}
 		}
 		if(client != null && !client.isClosed()) {
 			try {client.shutdownInput();}
-			catch(IOException e) {System.out.println("Socket/Input already closed");}
+			catch(IOException e) {Debug.log("Socket/Input already closed");}
 			try {client.shutdownOutput();}
-			catch(IOException e) {System.out.println("Socket/Output already closed");}
+			catch(IOException e) {Debug.log("Socket/Output already closed");}
 			try {client.close();}
-			catch(IOException e) {System.out.println("Client already closed");}
+			catch(IOException e) {Debug.log("Client already closed");}
 		}
 	}
 }
