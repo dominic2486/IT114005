@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import utils.Debug;
 
 public class ServerThread extends Thread{
 	private Socket client;
@@ -10,10 +11,24 @@ public class ServerThread extends Thread{
 	private boolean isRunning = false;
 	private SocketServer server;//ref to our server so we can call methods on it
 	//more easily
+	private Room currentRoom;// what room we are in, should be lobby by default
 	private String clientName = "Anon";
-	public ServerThread(Socket myClient, SocketServer server) throws IOException {
+	
+	protected synchronized Room getCurrentRoom() {
+		return currentRoom;
+	}
+
+	protected synchronized void setCurrentRoom(Room room) {
+		if (room != null) {
+			currentRoom = room;
+		} else {
+			Debug.log("Passed in room was null, this shouldn't happen");
+		}
+	}
+	
+	public ServerThread(Socket myClient, Room room) throws IOException {
 		this.client = myClient;
-		this.server = server;
+		this.currentRoom = room;
 		isRunning = true;
 		out = new ObjectOutputStream(client.getOutputStream());
 		in = new ObjectInputStream(client.getInputStream());
@@ -43,13 +58,20 @@ public class ServerThread extends Thread{
 		//server.broadcast(payload, this.getId());
 		server.broadcast(payload, this.clientName);
 	}
+	
+	/***
+	 * Sends the payload to the client represented by this ServerThread
+	 * 
+	 * @param payload
+	 * @return
+	 */
 	public boolean send(Payload payload) {
 		try {
 			out.writeObject(payload);
 			return true;
 		}
 		catch(IOException e) {
-			System.out.println("Error sending message to client");
+			Debug.log("Error sending message to client");
 			e.printStackTrace();
 			cleanup();
 			return false;
@@ -80,18 +102,18 @@ public class ServerThread extends Thread{
 		}
 		catch(Exception e) {
 			e.printStackTrace();
-			System.out.println("Terminating Client");
+			Debug.log("Terminating Client");
 		}
 		finally {
 			//we're going to try to send our disconnect message, but it could fail
 			broadcastDisconnected();
-			//TODO
-			System.out.println("Server Cleanup");
+			Debug.log("Server Cleanup");
 			cleanup();
 		}
 	}
+	
 	private void processPayload(Payload payload) {
-		System.out.println("Received from client: " + payload);
+		Debug.log("Received from client: " + payload);
 		switch(payload.getPayloadType()) {
 		case CONNECT:
 			String m = payload.getMessage();
@@ -114,6 +136,7 @@ public class ServerThread extends Thread{
 			break;
 		}
 	}
+	
 	private void cleanup() {
 		if(in != null) {
 			try {in.close();}

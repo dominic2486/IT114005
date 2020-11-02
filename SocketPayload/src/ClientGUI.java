@@ -29,6 +29,7 @@ public class ClientGUI extends JPanel implements ActionListener, KeyListener
     JButton sendBut = new JButton();
     JTextArea textArea = new JTextArea(5, 20);
 	JScrollPane scrollPane = new JScrollPane(); 
+	//JComboBox lobbyListBox = new JComboBox()
     ClientGUI here = this;
     Socket server;
     ObjectOutputStream out;
