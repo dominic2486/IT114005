@@ -69,37 +69,44 @@ public class ServerThread extends Thread {
      * @return
      */
     protected boolean send(String clientName, String message) {
-	Payload payload = new Payload();
-	payload.setPayloadType(PayloadType.MESSAGE);
-	payload.setClientName(clientName);
-	payload.setMessage(message);
-
-	return sendPayload(payload);
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.MESSAGE);
+		payload.setClientName(clientName);
+		payload.setMessage(message);
+	
+		return sendPayload(payload);
     }
 
-    protected boolean sendConnectionStatus(String clientName, boolean isConnect) {
-	Payload payload = new Payload();
-	if (isConnect) {
-	    payload.setPayloadType(PayloadType.CONNECT);
-	}
-	else {
-	    payload.setPayloadType(PayloadType.DISCONNECT);
-	}
-	payload.setClientName(clientName);
-	return sendPayload(payload);
+    protected boolean sendConnectionStatus(String clientName, boolean isConnect, String message) {
+		Payload payload = new Payload();
+		if (isConnect) {
+		    payload.setPayloadType(PayloadType.CONNECT);
+		    payload.setMessage(message);
+		} else {
+		    payload.setPayloadType(PayloadType.DISCONNECT);
+		    payload.setMessage(message);
+		}
+		payload.setClientName(clientName);
+		return sendPayload(payload);
     }
 
+    protected boolean sendClearList() {
+    	Payload payload = new Payload();
+    	payload.setPayloadType(PayloadType.CLEAR_PLAYERS);
+    	return sendPayload(payload);
+    }
+    
     private boolean sendPayload(Payload p) {
-	try {
-	    out.writeObject(p);
-	    return true;
-	}
-	catch (IOException e) {
-	    log.log(Level.INFO, "Error sending message to client (most likely disconnected)");
-	    e.printStackTrace();
-	    cleanup();
-	    return false;
-	}
+		try {
+		    out.writeObject(p);
+		    return true;
+		}
+		catch (IOException e) {
+		    log.log(Level.INFO, "Error sending message to client (most likely disconnected)");
+		    e.printStackTrace();
+		    cleanup();
+		    return false;
+		}
     }
 
     /***
@@ -108,28 +115,32 @@ public class ServerThread extends Thread {
      * @param p
      */
     private void processPayload(Payload p) {
-	switch (p.getPayloadType()) {
-	case CONNECT:
-	    // here we'll fetch a clientName from our client
-	    String n = p.getClientName();
-	    if (n != null) {
-		clientName = n;
-		log.log(Level.INFO, "Set our name to " + clientName);
-		if (currentRoom != null) {
-		    currentRoom.joinLobby(this);
+		switch (p.getPayloadType()) {
+		case CONNECT:
+		    // here we'll fetch a clientName from our client
+		    String n = p.getClientName();
+		    if (n != null) {
+			clientName = n;
+			log.log(Level.INFO, "Set our name to " + clientName);
+			if (currentRoom != null) {
+			    currentRoom.joinLobby(this);
+			}
+		    }
+		    break;
+		case DISCONNECT:
+		    isRunning = false;// this will break the while loop in run() and clean everything up
+		    break;
+		case MESSAGE:
+		    currentRoom.sendMessage(this, p.getMessage());
+		    break;
+		case CLEAR_PLAYERS:
+		    // we currently don't need to do anything since the UI/Client won't be sending
+		    // this
+		    break;
+		default:
+		    log.log(Level.INFO, "Unhandled payload on server: " + p);
+		    break;
 		}
-	    }
-	    break;
-	case DISCONNECT:
-	    isRunning = false;// this will break the while loop in run() and clean everything up
-	    break;
-	case MESSAGE:
-	    currentRoom.sendMessage(this, p.getMessage());
-	    break;
-	default:
-	    log.log(Level.INFO, "Unhandled payload on server: " + p);
-	    break;
-	}
     }
 
     @Override

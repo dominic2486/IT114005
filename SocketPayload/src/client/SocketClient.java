@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 
 import server.Payload;
 import server.PayloadType;
-//part 6
+//part 7
 public class SocketClient {
 	private static Socket server;
 	private static Thread fromServerThread;
@@ -44,7 +44,6 @@ public class SocketClient {
 			out.writeObject(p);
 		}
 		catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -83,6 +82,8 @@ public class SocketClient {
 		fromServerThread.start();// start the thread
 	}
 
+	
+	
 	/***
 	 * Determine any special logic for different PayloadTypes
 	 * 
@@ -106,6 +107,11 @@ public class SocketClient {
 				event.onMessageReceive(p.getClientName(), p.getMessage());
 			}
 			break;
+		case CLEAR_PLAYERS:
+		    if (event != null) {
+		    	event.onChangeRoom();
+		    }
+		    break;
 		default:
 			log.log(Level.WARNING, "unhandled payload on client" + p);
 			break;
