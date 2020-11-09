@@ -1,3 +1,4 @@
+package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,6 +16,9 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import javax.swing.*;
+
+import server.Payload;
+import server.PayloadType;
 
 public class ClientGUI extends JPanel implements ActionListener, KeyListener
 {
