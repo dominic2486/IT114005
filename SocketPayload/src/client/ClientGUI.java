@@ -17,6 +17,9 @@ import java.net.UnknownHostException;
 
 import javax.swing.*;
 
+import server.Payload;
+import server.PayloadType;
+
 public class ClientGUI extends JPanel implements ActionListener, KeyListener
 {
 	private static final long serialVersionUID = 1L;
