@@ -53,7 +53,7 @@ public class ClientUI extends JFrame implements Event {
 		panel.add(hostLabel);
 		panel.add(host);
 		JLabel portLabel = new JLabel("Port:");
-		JTextField port = new JTextField("3000");
+		JTextField port = new JTextField("3001");
 		panel.add(portLabel);
 		panel.add(port);
 		JButton button = new JButton("Next");
@@ -70,7 +70,6 @@ public class ClientUI extends JFrame implements Event {
 					}
 					catch (IOException e1) {
 						e1.printStackTrace();
-						// TODO handle error properly
 						log.log(Level.SEVERE, "Error connecting");
 					}
 				}
