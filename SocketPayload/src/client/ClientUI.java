@@ -6,10 +6,15 @@ import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -19,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
 public class ClientUI extends JFrame implements Event {
@@ -29,11 +35,15 @@ public class ClientUI extends JFrame implements Event {
 	CardLayout card;
 	ClientUI self;
 	JPanel textArea;
+	JPanel userPanel;
+	List<User> users = new ArrayList<User>();
+	
+	Dimension windowSize = new Dimension(400, 400);
 	private final static Logger log = Logger.getLogger(ClientUI.class.getName());
 
 	public ClientUI(String title) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setPreferredSize(new Dimension(400, 400));
+		setPreferredSize(windowSize);
 		setLocationRelativeTo(null);
 		self = this;
 		setTitle(title);
@@ -42,6 +52,7 @@ public class ClientUI extends JFrame implements Event {
 		createConnectionScreen();
 		createUserInputScreen();
 		createPanelRoom();
+		createPanelUserList();
 		showUI();
 	}
 
@@ -107,7 +118,7 @@ public class ClientUI extends JFrame implements Event {
 	void createPanelRoom() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-
+	
 		textArea = new JPanel();
 		textArea.setLayout(new BoxLayout(textArea, BoxLayout.Y_AXIS));
 		textArea.setAlignmentY(Component.BOTTOM_ALIGNMENT);
@@ -115,28 +126,70 @@ public class ClientUI extends JFrame implements Event {
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		panel.add(scroll, BorderLayout.CENTER);
-
+	
 		JPanel input = new JPanel();
 		input.setLayout(new BoxLayout(input, BoxLayout.X_AXIS));
 		JTextField text = new JTextField();
 		input.add(text);
 		JButton button = new JButton("Send");
+		text.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "sendAction");
+		text.getActionMap().put("sendAction", new AbstractAction() {
+		    public void actionPerformed(ActionEvent actionEvent) {
+			button.doClick();
+		    }
+		});
+	
 		button.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (text.getText().length() > 0) {
-					SocketClient.sendMessage(text.getText());
-					text.setText("");
-				}
-			}
+	    @Override
+	    public void actionPerformed(ActionEvent e) {
+		if (text.getText().length() > 0) {
+		    SocketClient.sendMessage(text.getText());
+		    text.setText("");
+		}
+	    }
 
-		});
-		input.add(button);
-		panel.add(input, BorderLayout.SOUTH);
-		this.add(panel);
+	});
+	input.add(button);
+	panel.add(input, BorderLayout.SOUTH);
+	this.add(panel);
 	}
 
+	void createPanelUserList() {
+		userPanel = new JPanel();
+		userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.Y_AXIS));
+		userPanel.setAlignmentY(Component.TOP_ALIGNMENT);
+
+		JScrollPane scroll = new JScrollPane(userPanel);
+		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+		Dimension d = new Dimension(100, windowSize.height);
+		scroll.setPreferredSize(d);
+
+		textArea.getParent().getParent().getParent().add(scroll, BorderLayout.EAST);
+		
+	}
+	
+	void addClient(String name) {
+		User u = new User(name);
+		Dimension p = new Dimension(userPanel.getSize().width, 30);
+		u.setPreferredSize(p);
+		u.setMinimumSize(p);
+		u.setMaximumSize(p);
+		userPanel.add(u);
+		users.add(u);
+		pack();
+	}
+
+	void removeClient(User client) {
+		userPanel.remove(client);
+		
+		client.removeAll();
+		userPanel.revalidate();
+		userPanel.repaint();
+	}
+	
 	/***
 	 * Attempts to calculate the necessary dimensions for a potentially wrapped
 	 * string of text. This isn't perfect and some extra whitespace above or below
@@ -203,12 +256,26 @@ public class ClientUI extends JFrame implements Event {
 	public void onClientConnect(String clientName, String message) {
 		log.log(Level.INFO, String.format("%s: %s", clientName, message));
 		self.addMessage(String.format("%s: %s", clientName, message));
+		if (message != null && message.trim().isEmpty()) {
+		    self.addMessage(String.format("%s: %s", clientName, message));
+		}
 	}
 
 	@Override
 	public void onClientDisconnect(String clientName, String message) {
 		log.log(Level.INFO, String.format("%s: %s", clientName, message));
-		self.addMessage(String.format("%s: %s", clientName, message));
+		//self.addMessage(String.format("%s: %s", clientName, message));
+		Iterator<User> iter = users.iterator();
+		while (iter.hasNext()) {
+		    User u = iter.next();
+		    if (u.getName() == clientName) {
+				removeClient(u);
+				iter.remove();
+				self.addMessage(String.format("%s: %s", clientName, message));
+				break;
+		    }
+
+		}
 	}
 
 	@Override
@@ -219,5 +286,19 @@ public class ClientUI extends JFrame implements Event {
 	
 	public static void main(String[] args) {
 		ClientUI ui = new ClientUI("My UI");
+		if (ui != null) {
+		    log.log(Level.FINE, "Started");
+		}
+	}
+
+	@Override
+	public void onChangeRoom() {
+		Iterator<User> iter = users.iterator();
+		while (iter.hasNext()) {
+		    User u = iter.next();
+		    removeClient(u);
+		    iter.remove();
+		}
+		
 	}
 }
