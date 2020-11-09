@@ -70,23 +70,23 @@ public class ClientUI extends JFrame implements Event {
 		JButton button = new JButton("Next");
 		button.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
 				String _host = host.getText();
 				String _port = port.getText();
 				if (_host.length() > 0 && _port.length() > 0) {
-					try {
-						connect(_host, _port);
-						self.next();
-					}
-					catch (IOException e1) {
-						e1.printStackTrace();
-						log.log(Level.SEVERE, "Error connecting");
-					}
+				    try {
+					connect(_host, _port);
+					self.next();
+				    }
+				    catch (IOException e1) {
+					e1.printStackTrace();
+					// TODO handle error properly
+					log.log(Level.SEVERE, "Error connecting");
+				    }
 				}
-			}
-
-		});
+		    }
+	});
 		panel.add(button);
 		this.add(panel);
 	}
@@ -134,25 +134,25 @@ public class ClientUI extends JFrame implements Event {
 		JButton button = new JButton("Send");
 		text.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "sendAction");
 		text.getActionMap().put("sendAction", new AbstractAction() {
-		    public void actionPerformed(ActionEvent actionEvent) {
-			button.doClick();
-		    }
-		});
-	
-		button.addActionListener(new ActionListener() {
-
-	    @Override
-	    public void actionPerformed(ActionEvent e) {
-		if (text.getText().length() > 0) {
-		    SocketClient.sendMessage(text.getText());
-		    text.setText("");
-		}
+	    public void actionPerformed(ActionEvent actionEvent) {
+		button.doClick();
 	    }
-
 	});
-	input.add(button);
-	panel.add(input, BorderLayout.SOUTH);
-	this.add(panel);
+
+		button.addActionListener(new ActionListener() {
+	
+		    @Override
+		    public void actionPerformed(ActionEvent e) {
+			if (text.getText().length() > 0) {
+			    SocketClient.sendMessage(text.getText());
+			    text.setText("");
+			}
+		    }
+	
+		});
+		input.add(button);
+		panel.add(input, BorderLayout.SOUTH);
+		this.add(panel);
 	}
 
 	void createPanelUserList() {
@@ -255,8 +255,8 @@ public class ClientUI extends JFrame implements Event {
 	@Override
 	public void onClientConnect(String clientName, String message) {
 		log.log(Level.INFO, String.format("%s: %s", clientName, message));
-		self.addMessage(String.format("%s: %s", clientName, message));
-		if (message != null && message.trim().isEmpty()) {
+		addClient(clientName);
+		if (message != null && !message.trim().isEmpty()) {
 		    self.addMessage(String.format("%s: %s", clientName, message));
 		}
 	}
