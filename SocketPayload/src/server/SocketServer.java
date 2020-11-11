@@ -206,4 +206,17 @@ public class SocketServer {
 	    log.log(Level.INFO, "Server Stopped");
 	}
     }
+
+    protected List<String> getRooms() {
+    	// not the most efficient way to do it, but it works
+    	List<String> roomNames = new ArrayList<String>();
+    	Iterator<Room> iter = rooms.iterator();
+    	while (iter.hasNext()) {
+    	    Room r = iter.next();
+    	    if (r != null && r.getName() != null) {
+    		roomNames.add(r.getName());
+    	    }
+    	}
+    	return roomNames;
+    }
 }

@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//import client.Player;
+//import core.BaseGamePanel;
+
 public class Room implements AutoCloseable {
     private static SocketServer server;// used to refer to accessible server functions
     private String name;
@@ -14,7 +17,15 @@ public class Room implements AutoCloseable {
     private final static String COMMAND_TRIGGER = "/";
     private final static String CREATE_ROOM = "createroom";
     private final static String JOIN_ROOM = "joinroom";
-
+    //private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
+    //static Dimension gameAreaSize = new Dimension(400, 600);
+    
+    /*public Room(String name, boolean delayStart) {
+    	super(delayStart);
+    	this.name = name;
+    	isServer = true;
+    }*/
+    
     public Room(String name) {
 	this.name = name;
     }
@@ -187,6 +198,10 @@ public class Room implements AutoCloseable {
 	server.cleanupRoom(this);
 	name = null;
 	// should be eligible for garbage collection now
+    }
+
+    public List<String> getRooms() {
+    	return server.getRooms();
     }
 
 }
