@@ -121,9 +121,18 @@ public class ClientUI extends JFrame implements Event {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		JLabel userLabel = new JLabel("Username:");
 		JTextField username = new JTextField();
+		
 		panel.add(userLabel);
 		panel.add(username);
 		JButton button = new JButton("Join");
+		username.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "sendAction");
+		username.getActionMap().put("sendAction", new AbstractAction() {
+			private static final long serialVersionUID = 1L;
+
+			public void actionPerformed(ActionEvent actionEvent) {
+		    	button.doClick();
+		    }
+		});
 		button.addActionListener(new ActionListener() {
 
 			@Override
@@ -136,6 +145,7 @@ public class ClientUI extends JFrame implements Event {
 			}
 
 		});
+		
 		panel.add(button);
 		this.add(panel);
 	}
