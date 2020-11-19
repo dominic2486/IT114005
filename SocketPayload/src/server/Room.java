@@ -150,7 +150,19 @@ public class Room implements AutoCloseable {
 				    joinRoom(roomName, client);
 				    response = "Joined room "+ roomName;
 				    break;
-				
+				case "roll":
+					Integer sidesOfDie=6;
+					String num = Integer.toString((int)((Math.random() * sidesOfDie)+1));
+					response= "D: "+num;
+				case "flip":
+					int randFlip = (int) Math.random() *2;
+					if(randFlip==0) {
+						response="C: Heads";
+						sendMessage(client, "C: Heads");
+					}else {
+						response="C: Tails";
+						sendMessage(client, "C: Tails");
+					}
 				}
 		    }
 		}
