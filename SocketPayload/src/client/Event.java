@@ -1,8 +1,6 @@
 
 package client;
 
-import java.awt.Point;
-
 public interface Event {
     void onClientConnect(String clientName, String message);
 
@@ -12,9 +10,9 @@ public interface Event {
     
     void onChangeRoom();
 
-    void onSyncDirection(String clientName, Point direction);
+    //void onSyncDirection(String clientName, Point direction);
 
-    void onSyncPosition(String clientName, Point position);
+    //void onSyncPosition(String clientName, Point position);
 
     void onGetRoom(String roomName);
 }

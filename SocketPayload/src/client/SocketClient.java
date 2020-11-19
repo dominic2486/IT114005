@@ -28,11 +28,11 @@ public enum SocketClient {
     private static List<Event> events = new ArrayList<Event>();// change from event to list<event>
 
     private Payload buildMessage(String message) {
-	Payload payload = new Payload();
-	payload.setPayloadType(PayloadType.MESSAGE);
-	payload.setClientName(clientName);
-	payload.setMessage(message);
-	return payload;
+		Payload payload = new Payload();
+		payload.setPayloadType(PayloadType.MESSAGE);
+		payload.setClientName(clientName);
+		payload.setMessage(message);
+		return payload;
     }
 
     private Payload buildConnectionStatus(String name, boolean isConnect) {
@@ -48,13 +48,12 @@ public enum SocketClient {
     }
 
     private void sendPayload(Payload p) {
-	try {
-	    out.writeObject(p);
-	}
-	catch (IOException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
-	}
+		try {
+		    out.writeObject(p);
+		}
+		catch (IOException e) {
+		    e.printStackTrace();
+		}
     }
 
     private void listenForServerMessage(ObjectInputStream in) {
@@ -92,13 +91,13 @@ public enum SocketClient {
     }
 
     private void sendOnClientConnect(String name, String message) {
-	Iterator<Event> iter = events.iterator();
-	while (iter.hasNext()) {
-	    Event e = iter.next();
-	    if (e != null) {
-		e.onClientConnect(name, message);
-	    }
-	}
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+		    Event e = iter.next();
+		    if (e != null) {
+			e.onClientConnect(name, message);
+		    }
+		}
     }
 
     private void sendOnClientDisconnect(String name, String message) {
@@ -152,13 +151,13 @@ public enum SocketClient {
     }*/
 
     private void sendRoom(String roomName) {
-	Iterator<Event> iter = events.iterator();
-	while (iter.hasNext()) {
-	    Event e = iter.next();
-	    if (e != null) {
-		e.onGetRoom(roomName);
-	    }
-	}
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+		    Event e = iter.next();
+		    if (e != null) {
+			e.onGetRoom(roomName);
+		    }
+		}
     }
 
     /***
@@ -211,18 +210,18 @@ public enum SocketClient {
     }
 
     public boolean connect(String address, String port) {
-	try {
-	    server = new Socket(address, Integer.parseInt(port));
-	    log.log(Level.INFO, "Client connected");
-	    return true;
-	}
-	catch (UnknownHostException e) {
-	    e.printStackTrace();
-	}
-	catch (IOException e) {
-	    e.printStackTrace();
-	}
-	return false;
+		try {
+		    server = new Socket(address, Integer.parseInt(port));
+		    log.log(Level.INFO, "Client connected");
+		    return true;
+		}
+		catch (UnknownHostException e) {
+		    e.printStackTrace();
+		}
+		catch (IOException e) {
+		    e.printStackTrace();
+		}
+		return false;
     }
 
     public void setUsername(String username) {
@@ -253,29 +252,6 @@ public enum SocketClient {
 		p.setPayloadType(PayloadType.GET_ROOMS);
 		p.setMessage(query);
 		sendPayload(p);
-    }
-
-    /**
-     * Sends desired to change direction to server
-     * 
-     * @param dir
-     */
-    /*public void syncDirection(Point dir) {
-	Payload p = new Payload();
-	// no need to add clientName here since ServerThread has the info
-	// so let's save a few bytes
-	p.setPayloadType(PayloadType.SYNC_DIRECTION);
-	p.setPoint(dir);
-	sendPayload(p);
-    }*/
-
-    /**
-     * we won't be syncing position from the client since our server is the one
-     * that'll do it so creating this unused method as a reminder not to use/make it
-     */
-    @Deprecated
-    public void syncPosition() {
-	log.log(Level.SEVERE, "My sample doesn't use this");
     }
 
     public boolean start() throws IOException {

@@ -50,12 +50,12 @@ public class ClientUI extends JFrame implements Event {
 	public ClientUI(String title) {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		menu = new JMenuBar();
-		JMenu roomsMenu = new JMenu("Rooms");
-		JMenuItem roomsSearch = new JMenuItem("Search");
+		JMenu roomsMenu = new JMenu("Actions");
+		JMenuItem roomsSearch = new JMenuItem("Rooms");
 		roomsSearch.addActionListener(new ActionListener() {
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-				System.out.println("clicked");
+				System.out.println("clicked Rooms");
 				goToPanel("rooms");
 		    }
 
@@ -308,8 +308,6 @@ public class ClientUI extends JFrame implements Event {
 		setVisible(true);
 	}
 
-	
-
 	@Override
 	public void onClientConnect(String clientName, String message) {
 		log.log(Level.INFO, String.format("%s: %s", clientName, message));
@@ -357,18 +355,6 @@ public class ClientUI extends JFrame implements Event {
 		    removeClient(u);
 		    iter.remove();
 		}
-		
-	}
-
-	@Override
-	public void onSyncDirection(String clientName, Point direction) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onSyncPosition(String clientName, Point position) {
-		// TODO Auto-generated method stub
 		
 	}
 

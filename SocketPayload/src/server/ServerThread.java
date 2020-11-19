@@ -160,6 +160,12 @@ public class ServerThread extends Thread {
 				    }
 				}
 			}
+		case CREATE_ROOM:
+		    currentRoom.createRoom(p.getMessage(), this);
+		    break;
+		case JOIN_ROOM:
+		    currentRoom.joinRoom(p.getMessage(), this);
+		    break;
 		default:
 		    log.log(Level.INFO, "Unhandled payload on server: " + p);
 		    break;

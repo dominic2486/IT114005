@@ -6,7 +6,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class User extends JPanel {
-    private String name;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private String name;
     private JTextField nameField;
 
     public User(String name) {
