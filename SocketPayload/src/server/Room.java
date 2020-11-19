@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//import client.Player;
+//import core.BaseGamePanel;
+
 public class Room implements AutoCloseable {
     private static SocketServer server;// used to refer to accessible server functions
     private String name;
@@ -14,23 +17,40 @@ public class Room implements AutoCloseable {
     private final static String COMMAND_TRIGGER = "/";
     private final static String CREATE_ROOM = "createroom";
     private final static String JOIN_ROOM = "joinroom";
-
+    private List<ServerThread> clients = new ArrayList<ServerThread>();
+    //private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
+    //static Dimension gameAreaSize = new Dimension(400, 600);
+    
+    /*public Room(String name, boolean delayStart) {
+    	super(delayStart);
+    	this.name = name;
+    	isServer = true;
+    }*/
+    
     public Room(String name) {
-	this.name = name;
+    	this.name = name;
     }
 
-    public static void setServer(SocketServer server) {
-	Room.server = server;
+    public Room(String prelobby, boolean b) {
+    	//super(b);
+    	this.name = prelobby;
+    	//isServer = true;
+	}
+
+	public static void setServer(SocketServer server) {
+    	Room.server = server;
     }
 
     public String getName() {
 	return name;
     }
 
-    private List<ServerThread> clients = new ArrayList<ServerThread>();
+    
 
     protected synchronized void addClient(ServerThread client) {
 		client.setCurrentRoom(this);
+		boolean exists = false;
+		//Iterator<>
 		if (clients.indexOf(client) > -1) {
 		    log.log(Level.INFO, "Attempting to add a client that already exists");
 		}
@@ -44,7 +64,8 @@ public class Room implements AutoCloseable {
 		}
     }
 
-    private void updateClientList(ServerThread client) {
+    @SuppressWarnings("unused")
+	private void updateClientList(ServerThread client) {
     	Iterator<ServerThread> iter = clients.iterator();
     	while (iter.hasNext()) {
     	    ServerThread c = iter.next();
@@ -87,6 +108,13 @@ public class Room implements AutoCloseable {
     	server.joinLobby(client);
     }
 
+    protected void createRoom(String room, ServerThread client) {
+    	if (server.createNewRoom(room)) {
+    	    sendMessage(client, "Created a new room");
+    	    joinRoom(room, client);
+    	}
+    }
+    
     /***
      * Helper function to process messages to trigger different functionality.
      * 
@@ -94,8 +122,9 @@ public class Room implements AutoCloseable {
      * @param client  The sender of the message (since they'll be the ones
      *                triggering the actions)
      */
-    private boolean processCommands(String message, ServerThread client) {
-		boolean wasCommand = false;
+    private String processCommands(String message, ServerThread client) {
+		//boolean wasCommand = false;
+		String response = null;
 		try {
 		    if (message.indexOf(COMMAND_TRIGGER) > -1) {
 				String[] comm = message.split(COMMAND_TRIGGER);
@@ -110,23 +139,25 @@ public class Room implements AutoCloseable {
 				switch (command) {
 				case CREATE_ROOM:
 				    roomName = comm2[1];
-				    if (server.createNewRoom(roomName)) {
-					joinRoom(roomName, client);
-				    }
-				    wasCommand = true;
+				    /*if (server.createNewRoom(roomName)) {
+				    	joinRoom(roomName, client);
+				    }*/
+				    createRoom(roomName, client);
+				    response = "Created room "+ roomName;
 				    break;
 				case JOIN_ROOM:
 				    roomName = comm2[1];
 				    joinRoom(roomName, client);
-				    wasCommand = true;
+				    response = "Joined room "+ roomName;
 				    break;
+				
 				}
 		    }
 		}
 		catch (Exception e) {
 		    e.printStackTrace();
 		}
-		return wasCommand;
+		return response;
     }
 
     protected void sendConnectionStatus(ServerThread client, boolean isConnect, String message) {
@@ -150,20 +181,20 @@ public class Room implements AutoCloseable {
      * @param message The message to broadcast inside the room
      */
     protected void sendMessage(ServerThread sender, String message) {
-	log.log(Level.INFO, getName() + ": Sending message to " + clients.size() + " clients");
-	if (processCommands(message, sender)) {
-	    // it was a command, don't broadcast
-	    return;
-	}
-	Iterator<ServerThread> iter = clients.iterator();
-	while (iter.hasNext()) {
-	    ServerThread client = iter.next();
-	    boolean messageSent = client.send(sender.getClientName(), message);
-	    if (!messageSent) {
-		iter.remove();
-		log.log(Level.INFO, "Removed client " + client.getId());
-	    }
-	}
+		log.log(Level.INFO, getName() + ": Sending message to " + clients.size() + " clients");
+		if (processCommands(message, sender)!=null) {
+		    // it was a command, don't broadcast
+		    return;
+		}
+		Iterator<ServerThread> iter = clients.iterator();
+		while (iter.hasNext()) {
+		    ServerThread client = iter.next();
+		    boolean messageSent = client.send(sender.getClientName(), message);
+		    if (!messageSent) {
+				iter.remove();
+				log.log(Level.INFO, "Removed client " + client.getId());
+		    }
+		}
     }
 
     /***
@@ -187,6 +218,10 @@ public class Room implements AutoCloseable {
 	server.cleanupRoom(this);
 	name = null;
 	// should be eligible for garbage collection now
+    }
+
+    public List<String> getRooms(String room) {
+    	return server.getRooms(room);
     }
 
 }
