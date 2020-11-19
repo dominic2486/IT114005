@@ -20,6 +20,7 @@ import javax.swing.*;
 import server.Payload;
 import server.PayloadType;
 
+@SuppressWarnings("unused")
 public class ClientGUI extends JPanel implements ActionListener, KeyListener
 {
 	private static final long serialVersionUID = 1L;
