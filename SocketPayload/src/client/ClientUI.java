@@ -4,7 +4,6 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -55,7 +54,7 @@ public class ClientUI extends JFrame implements Event {
 		roomsSearch.addActionListener(new ActionListener() {
 		    @Override
 		    public void actionPerformed(ActionEvent e) {
-				System.out.println("clicked Rooms");
+				//System.out.println("clicked Rooms");
 				goToPanel("rooms");
 		    }
 
@@ -189,7 +188,7 @@ public class ClientUI extends JFrame implements Event {
 		});
 		input.add(button);
 		panel.add(input, BorderLayout.SOUTH);
-		this.add(panel);
+		this.add(panel, "lobby");
 	}
 
 	void createPanelUserList() {
@@ -360,7 +359,11 @@ public class ClientUI extends JFrame implements Event {
 
 	@Override
 	public void onGetRoom(String roomName) {
-		// TODO Auto-generated method stub
+		if(roomsPanel != null)
+		{
+			roomsPanel.addRoom(roomName);
+			pack();
+		}
 		
 	}
 }

@@ -149,7 +149,7 @@ public class ServerThread extends Thread {
 		    break;
 		case GET_ROOMS:
 		    // far from efficient but it works for example sake
-		    List<String> roomNames = currentRoom.getRooms();
+		    List<String> roomNames = currentRoom.getRooms(p.getMessage());
 		    Iterator<String> iter = roomNames.iterator();
 		    while (iter.hasNext()) {
 				String room = iter.next();
@@ -160,6 +160,7 @@ public class ServerThread extends Thread {
 				    }
 				}
 			}
+		    break;
 		case CREATE_ROOM:
 		    currentRoom.createRoom(p.getMessage(), this);
 		    break;
@@ -174,28 +175,28 @@ public class ServerThread extends Thread {
 
     @Override
     public void run() {
-	try {
-	    isRunning = true;
-	    Payload fromClient;
-	    while (isRunning && // flag to let us easily control the loop
-		    !client.isClosed() // breaks the loop if our connection closes
-		    && (fromClient = (Payload) in.readObject()) != null // reads an object from inputStream (null would
-									// likely mean a disconnect)
-	    ) {
-		System.out.println("Received from client: " + fromClient);
-		processPayload(fromClient);
-	    } // close while loop
-	}
-	catch (Exception e) {
-	    // happens when client disconnects
-	    e.printStackTrace();
-	    log.log(Level.INFO, "Client Disconnected");
-	}
-	finally {
-	    isRunning = false;
-	    log.log(Level.INFO, "Cleaning up connection for ServerThread");
-	    cleanup();
-	}
+    	try {
+    		isRunning = true;
+    		Payload fromClient;
+    		while (isRunning && // flag to let us easily control the loop
+    				!client.isClosed() // breaks the loop if our connection closes
+    				&& (fromClient = (Payload) in.readObject()) != null // reads an object from inputStream (null would
+    				// likely mean a disconnect)
+    				) {
+    			System.out.println("Received from client: " + fromClient);
+    			processPayload(fromClient);
+    		} // close while loop
+    	}
+    	catch (Exception e) {
+    		// happens when client disconnects
+    		e.printStackTrace();
+    		log.log(Level.INFO, "Client Disconnected");
+    	}
+    	finally {
+    		isRunning = false;
+    		log.log(Level.INFO, "Cleaning up connection for ServerThread");
+    		cleanup();
+    	}
     }
 
     private void cleanup() {

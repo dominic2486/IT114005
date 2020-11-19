@@ -155,7 +155,7 @@ public enum SocketClient {
 		while (iter.hasNext()) {
 		    Event e = iter.next();
 		    if (e != null) {
-			e.onGetRoom(roomName);
+		    	e.onGetRoom(roomName);
 		    }
 		}
     }

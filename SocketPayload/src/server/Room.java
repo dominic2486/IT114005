@@ -31,7 +31,13 @@ public class Room implements AutoCloseable {
     	this.name = name;
     }
 
-    public static void setServer(SocketServer server) {
+    public Room(String prelobby, boolean b) {
+    	//super(b);
+    	this.name = prelobby;
+    	//isServer = true;
+	}
+
+	public static void setServer(SocketServer server) {
     	Room.server = server;
     }
 
@@ -133,9 +139,10 @@ public class Room implements AutoCloseable {
 				switch (command) {
 				case CREATE_ROOM:
 				    roomName = comm2[1];
-				    if (server.createNewRoom(roomName)) {
-					joinRoom(roomName, client);
-				    }
+				    /*if (server.createNewRoom(roomName)) {
+				    	joinRoom(roomName, client);
+				    }*/
+				    createRoom(roomName, client);
 				    response = "Created room "+ roomName;
 				    break;
 				case JOIN_ROOM:
@@ -213,8 +220,8 @@ public class Room implements AutoCloseable {
 	// should be eligible for garbage collection now
     }
 
-    public List<String> getRooms() {
-    	return server.getRooms();
+    public List<String> getRooms(String room) {
+    	return server.getRooms(room);
     }
 
 }
