@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
+
 //import client.Player;
 //import core.BaseGamePanel;
 
@@ -150,13 +152,91 @@ public class Room implements AutoCloseable {
 				    joinRoom(roomName, client);
 				    response = "Joined room "+ roomName;
 				    break;
-				
+				case "roll":
+					Integer sidesOfDie=6;
+					String num = Integer.toString((int)((Math.random() * sidesOfDie)+1));
+					response= "D: "+num;
+					sendMessage(client, "D: "+num);
+					break;
+					
+				case "flip":
+					int randFlip = (int) Math.random() *2;
+					if(randFlip==0) {
+						response="C: Heads";
+						//sendMessage(client, "C: Heads");
+					}else {
+						response="C: Tails";
+						//sendMessage(client, "C: Tails");
+					}
+					break;
 				}
+		    }else {
+		    	response=message;
 		    }
 		}
 		catch (Exception e) {
 		    e.printStackTrace();
 		}
+		if(response.indexOf("@@") > -1) {
+	        String[] s1 = response.split("@@");
+	        String mess = "";
+	        mess += s1[0];
+	        for (int i = 1; i < s1.length; i++) {
+	            if (i % 2 == 0) {
+	                mess += s1[i];
+	            }
+	            else {
+	                mess += "<b>" + s1[i] + "</b>";
+	            }
+	        }
+	        response = mess;
+	        //message=response;
+	        //sendMessage(client, response);
+	        
+	    }
+		if(response.indexOf("##") > -1) {
+	        String[] s1 = response.split("##");
+	        String mess = "";
+	        mess += s1[0];
+	        for (int i = 1; i < s1.length; i++) {
+	            if (i % 2 == 0) {
+	                mess += s1[i];
+	            }
+	            else {
+	                mess += "<i>" + s1[i] + "</i>";
+	            }
+	        }
+	        response = mess;	        
+	    }
+		if(response.indexOf("!!") > -1) {
+	        String[] s1 = response.split("!!");
+	        String mess = "";
+	        mess += s1[0];
+	        for (int i = 1; i < s1.length; i++) {
+	            if (i % 2 == 0) {
+	                mess += s1[i];
+	            }
+	            else {
+	            	mess += "<font color='red'>" + s1[i] + "</font>";
+	            }
+	        }
+	        response = mess;	        
+	    }
+		if (response.indexOf("__") > -1) {
+	        String[] s1 = response.split("__");
+	        String mess = "";
+	        mess += s1[0];
+	        for (int i = 1; i < s1.length; i++) {
+	            if (i % 2 == 0) {
+	                mess += s1[i];
+	            }
+	            else {
+	                mess += "<u>" + s1[i] + "</u>";
+	            }
+	        }
+	        response = mess;
+	    }
+		
 		return response;
     }
 
@@ -182,10 +262,12 @@ public class Room implements AutoCloseable {
      */
     protected void sendMessage(ServerThread sender, String message) {
 		log.log(Level.INFO, getName() + ": Sending message to " + clients.size() + " clients");
-		if (processCommands(message, sender)!=null) {
+		String resp = processCommands(message,sender);
+		if (resp==null) {
 		    // it was a command, don't broadcast
 		    return;
 		}
+		message = resp;
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 		    ServerThread client = iter.next();
