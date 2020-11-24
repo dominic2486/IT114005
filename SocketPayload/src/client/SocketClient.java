@@ -74,7 +74,7 @@ public enum SocketClient {
 		}
 		catch (Exception e) {
 		    if (!server.isClosed()) {
-		    	e.printStackTrace();
+			e.printStackTrace();
 			log.log(Level.INFO, "Server closed connection");
 		    }
 		    else {
