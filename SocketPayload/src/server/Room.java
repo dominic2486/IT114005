@@ -194,8 +194,8 @@ public class Room implements AutoCloseable {
 	        //sendMessage(client, response);
 	        
 	    }
-		if(response.indexOf("//") > -1) {
-	        String[] s1 = response.split("//");
+		if(response.indexOf("##") > -1) {
+	        String[] s1 = response.split("##");
 	        String mess = "";
 	        mess += s1[0];
 	        for (int i = 1; i < s1.length; i++) {
@@ -206,12 +206,23 @@ public class Room implements AutoCloseable {
 	                mess += "<i>" + s1[i] + "</i>";
 	            }
 	        }
-	        response = mess;
-	        //message=response;
-	        //sendMessage(client, response);
-	        
+	        response = mess;	        
 	    }
-		/*if(response.indexOf("__") > -1) {
+		if(response.indexOf("!!") > -1) {
+	        String[] s1 = response.split("!!");
+	        String mess = "";
+	        mess += s1[0];
+	        for (int i = 1; i < s1.length; i++) {
+	            if (i % 2 == 0) {
+	                mess += s1[i];
+	            }
+	            else {
+	            	mess += "<font color='red'>" + s1[i] + "</font>";
+	            }
+	        }
+	        response = mess;	        
+	    }
+		if (response.indexOf("__") > -1) {
 	        String[] s1 = response.split("__");
 	        String mess = "";
 	        mess += s1[0];
@@ -220,22 +231,10 @@ public class Room implements AutoCloseable {
 	                mess += s1[i];
 	            }
 	            else {
-	                mess += "<i>" + s1[i] + "</i>";
+	                mess += "<u>" + s1[i] + "</u>";
 	            }
 	        }
 	        response = mess;
-	        //sendMessage(client, response);
-	        
-	    }*/
-		
-		if (response.contains("[r]") && response.contains("[/r]")) {
-			
-			String s1 = StringUtils.substringBetween(response, "[r]", "[/r]");
-	        response = response.replace(s1, "<font color='red'>" + s1 + "</font>");
-	        response = StringUtils.remove(response, "[r]");
-	        response = StringUtils.remove(response, "[/r]");
-	        System.out.println(response);
-	        
 	    }
 		
 		return response;
