@@ -162,10 +162,12 @@ public class Room implements AutoCloseable {
 				case "flip":
 					int randFlip = (int) Math.random() *2;
 					if(randFlip==0) {
+
 						response="<b><i>C: Heads</b></i>";
 						//sendMessage(client, "C: Heads");
 					}else {
 						response="<b><i>C: Tails</b></i>";
+
 						//sendMessage(client, "C: Tails");
 					}
 					break;

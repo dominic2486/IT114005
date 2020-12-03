@@ -13,7 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+//import org.apache.commons.lang3.StringUtils;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -82,6 +82,7 @@ public class ClientUI extends JFrame implements Event {
 	}
 
 	void createConnectionScreen() {
+		//System.out.printf
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		JLabel hostLabel = new JLabel("Host:");
