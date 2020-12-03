@@ -63,6 +63,7 @@ public class SocketServer {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
 
 	}
 

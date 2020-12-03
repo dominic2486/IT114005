@@ -155,8 +155,7 @@ public class Room implements AutoCloseable {
 				case "roll":
 					Integer sidesOfDie=6;
 					String num = Integer.toString((int)((Math.random() * sidesOfDie)+1));
-					response= "D: "+num;
-					sendMessage(client, "D: "+num);
+					sendMessage(client, "<b>D: "+num+"</b>");
 					break;
 					
 				case "flip":
@@ -171,6 +170,7 @@ public class Room implements AutoCloseable {
 						//sendMessage(client, "C: Tails");
 					}
 					break;
+				
 				}
 		    }else {
 		    	response=message;
