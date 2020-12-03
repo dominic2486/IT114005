@@ -23,45 +23,45 @@ public class SocketServer {
 	this.port = port;
 	log.log(Level.INFO, "Waiting for client");
 	try (ServerSocket serverSocket = new ServerSocket(port);) {
-	    isRunning = true;
-	    // create a lobby on start
-	    Room.setServer(this);
-	    lobby = new Room(LOBBY);// , this);
-	    rooms.add(lobby);
-	    while (SocketServer.isRunning) {
-		try {
-		    Socket client = serverSocket.accept();
-		    log.log(Level.INFO, "Client connecting...");
-		    // Server thread is the server's representation of the client
-		    ServerThread thread = new ServerThread(client, lobby);
-		    thread.start();
-		    // create a dummy room until we get further client details
-		    // technically once a user fully joins this lobby will be destroyed
-		    // but we'll track it in an array so we can attempt to clean it up just in case
-		    Room prelobby = new Room(PRELOBBY, true);// , this);
-		    prelobby.addClient(thread);
-		    isolatedPrelobbies.add(prelobby);
+		isRunning = true;
+		// create a lobby on start
+		Room.setServer(this);
+		lobby = new Room(LOBBY);// , this);
+		rooms.add(lobby);
+		while (SocketServer.isRunning) {
+			try {
+				Socket client = serverSocket.accept();
+				log.log(Level.INFO, "Client connecting...");
+				// Server thread is the server's representation of the client
+				ServerThread thread = new ServerThread(client, lobby);
+				thread.start();
+				// create a dummy room until we get further client details
+				// technically once a user fully joins this lobby will be destroyed
+				// but we'll track it in an array so we can attempt to clean it up just in case
+				Room prelobby = new Room(PRELOBBY, true);// , this);
+				prelobby.addClient(thread);
+				isolatedPrelobbies.add(prelobby);
 
-		    log.log(Level.INFO, "Client added to clients pool");
+				log.log(Level.INFO, "Client added to clients pool");
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		catch (IOException e) {
-		    e.printStackTrace();
-		}
-	    }
 
 	}
 	catch (IOException e) {
-	    e.printStackTrace();
+		e.printStackTrace();
 	}
 	finally {
-	    try {
-		isRunning = false;
-		cleanup();
-		log.log(Level.INFO, "closing server socket");
-	    }
-	    catch (Exception e) {
-		e.printStackTrace();
-	    }
+		try {
+			isRunning = false;
+			cleanup();
+			log.log(Level.INFO, "closing server socket");
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
     }
 
