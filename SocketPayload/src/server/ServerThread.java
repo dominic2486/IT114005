@@ -128,14 +128,14 @@ public class ServerThread extends Thread {
 		switch (p.getPayloadType()) {
 		case CONNECT:
 		    // here we'll fetch a clientName from our client
-		    String n = p.getClientName();
-		    if (n != null) {
-			clientName = n;
-			log.log(Level.INFO, "Set our name to " + clientName);
-			if (currentRoom != null) {
-			    currentRoom.joinLobby(this);
+			String n = p.getClientName();
+			if (n != null) {
+				clientName = n;
+				log.log(Level.INFO, "Set our name to " + clientName);
+				if (currentRoom != null) {
+					currentRoom.joinLobby(this);
+				}
 			}
-		    }
 		    break;
 		case DISCONNECT:
 		    isRunning = false;// this will break the while loop in run() and clean everything up
