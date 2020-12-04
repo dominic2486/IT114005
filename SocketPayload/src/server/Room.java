@@ -211,10 +211,11 @@ public class Room implements AutoCloseable {
 				if(response.indexOf("@") > -1) {
 					String temp=message;
 					List<String> users= new ArrayList<String>();
-					while(response.indexOf("@")>-1) {
-						String user = StringUtils.substringBetween(response, "@", " ");
+					while(temp.indexOf("@")>-1) {
+						String user = StringUtils.substringBetween(temp, "@", " ");
 						users.add(user);
 						temp=temp.replace("@"+user, "");
+						System.out.println(user);
 						
 						
 					}
@@ -229,6 +230,7 @@ public class Room implements AutoCloseable {
 					}*/
 					response = temp;
 					sendPrivateMessage(client, response, users);
+					return null;
 					//response = mess;
 				}
 			}
@@ -344,25 +346,25 @@ public class Room implements AutoCloseable {
 	
 	
 	protected void sendPrivateMessage(ServerThread sender, String message, List<String> users) {
-		log.log(Level.INFO, getName() + ": Sending message to " + clients.size() + " clients");
+		log.log(Level.INFO, getName() + ": Sending message to " + users.size() + " clients");
 		//List<String> noMessageList = sender.getMutedUsers();
-		String resp = processCommands(message,sender);
-		if (resp==null) {
-			// it was a command, don't broadcast
-			return;
-		}
-		message = resp;
+		
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ServerThread client = iter.next();
-			if(users.contains(client.getName()))
-				if(!client.isMuted(sender.getClientName())) {
+			System.out.println(client.getClientName());
+			System.out.println(users);
+			//users.indexOf(o)
+			if(users.contains(client.getClientName().toLowerCase())||client.getClientName().toLowerCase().equals(sender.getClientName())) {
+				System.out.println("1111111111111");
+				if(!sender.isMuted(client.getClientName())) {
 					boolean messageSent = client.send(sender.getClientName(), message);
 					if (!messageSent) {
 						iter.remove();
 						log.log(Level.INFO, "Removed client " + client.getId());
 					}
 				}
+			}
 		}
 
 	}

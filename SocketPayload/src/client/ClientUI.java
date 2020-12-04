@@ -268,7 +268,7 @@ public class ClientUI extends JFrame implements Event {
 		textArea.add(entry);
 
 		pack();
-		System.out.println(entry.getSize());
+		//System.out.println(entry.getSize());
 		JScrollBar sb = ((JScrollPane) textArea.getParent().getParent()).getVerticalScrollBar();
 		sb.setValue(sb.getMaximum());
 	}
@@ -311,7 +311,7 @@ public class ClientUI extends JFrame implements Event {
 
 	@Override
 	public void onClientConnect(String clientName, String message) {
-		log.log(Level.INFO, String.format("%s: %s", clientName, message));
+		log.log(Level.INFO, String.format("occ%s: %s", clientName, message));
 		addClient(clientName);
 		if (message != null && !message.trim().isEmpty()) {
 		    self.addMessage(String.format("%s: %s", clientName, message));
@@ -320,7 +320,7 @@ public class ClientUI extends JFrame implements Event {
 
 	@Override
 	public void onClientDisconnect(String clientName, String message) {
-		log.log(Level.INFO, String.format("%s: %s", clientName, message));
+		log.log(Level.INFO, String.format("ocd%s: %s", clientName, message));
 		//self.addMessage(String.format("%s: %s", clientName, message));
 		Iterator<User> iter = users.iterator();
 		while (iter.hasNext()) {
