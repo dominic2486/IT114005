@@ -16,7 +16,7 @@ public class ServerThread extends Thread {
     private boolean isRunning = false;
     private Room currentRoom;// what room we are in, should be lobby by default
     private String clientName;
-    private ArrayList<String> mutesClients = new ArrayList<String>();
+    List<String> mutesClients = new ArrayList<String>();
     private final static Logger log = Logger.getLogger(ServerThread.class.getName());
 
     public String getClientName() {
@@ -245,4 +245,10 @@ public class ServerThread extends Thread {
 	    }
 	}
     }
+
+	public boolean isMuted(String clientName) {
+		return mutesClients.contains(clientName);
+		
+	}
+
 }

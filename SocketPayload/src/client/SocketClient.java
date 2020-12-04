@@ -69,7 +69,7 @@ public enum SocketClient {
 		    Payload fromServer;
 		    // while we're connected, listen for Payloads from server
 		    while (!server.isClosed() && (fromServer = (Payload) in.readObject()) != null) {
-			processPayload(fromServer);
+		    	processPayload(fromServer);
 		    }
 		}
 		catch (Exception e) {

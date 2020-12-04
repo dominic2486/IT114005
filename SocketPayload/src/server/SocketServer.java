@@ -63,8 +63,8 @@ public class SocketServer {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+		
 	}
-
 	}
 
 	protected void cleanupRoom(Room r) {
@@ -243,7 +243,7 @@ public class SocketServer {
 		// let's allow port to be passed as a command line arg
 		// in eclipse you can set this via "Run Configurations"
 		// -> "Arguments" -> type the port in the text box -> Apply
-		int port = -1;
+		int port = 3001;
 		try {
 			port = Integer.parseInt(args[0]);
 		}
@@ -257,6 +257,11 @@ public class SocketServer {
 			server.start(port);
 			log.log(Level.INFO, "Server Stopped");
 		}
+	}
+	
+	public void doIt()
+	{
+		this.start(3001);
 	}
 }
 //package server;
