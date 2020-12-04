@@ -208,6 +208,29 @@ public class Room implements AutoCloseable {
 				}
 			}else {
 				response=message;
+				if(response.indexOf("@") > -1) {
+					String temp=message;
+					List<String> users= new ArrayList<String>();
+					while(response.indexOf("@")>-1) {
+						String user = StringUtils.substringBetween(response, "@", " ");
+						users.add(user);
+						temp=temp.replace("@"+user, "");
+						
+						
+					}
+					//String mess = s1[s1.length-1];
+					//System.out.println(mess);
+					//mess += s1[0];
+					/*for (int i = 1; i < StringUtils.countMatches(response, "@"); i++) {
+						if (i % 2 == 0) {
+							users.add(s1[i]);
+						}
+						
+					}*/
+					response = temp;
+					sendPrivateMessage(client, response, users);
+					//response = mess;
+				}
 			}
 		}
 		catch (Exception e) {
@@ -315,6 +338,31 @@ public class Room implements AutoCloseable {
 					log.log(Level.INFO, "Removed client " + client.getId());
 				}
 			}
+		}
+
+	}
+	
+	
+	protected void sendPrivateMessage(ServerThread sender, String message, List<String> users) {
+		log.log(Level.INFO, getName() + ": Sending message to " + clients.size() + " clients");
+		//List<String> noMessageList = sender.getMutedUsers();
+		String resp = processCommands(message,sender);
+		if (resp==null) {
+			// it was a command, don't broadcast
+			return;
+		}
+		message = resp;
+		Iterator<ServerThread> iter = clients.iterator();
+		while (iter.hasNext()) {
+			ServerThread client = iter.next();
+			if(users.contains(client.getName()))
+				if(!client.isMuted(sender.getClientName())) {
+					boolean messageSent = client.send(sender.getClientName(), message);
+					if (!messageSent) {
+						iter.remove();
+						log.log(Level.INFO, "Removed client " + client.getId());
+					}
+				}
 		}
 
 	}
