@@ -121,6 +121,7 @@ public class ClientUI extends JFrame implements Event {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		JLabel userLabel = new JLabel("Username:");
 		JTextField username = new JTextField();
+		//username.setFocusable(true);
 		
 		panel.add(userLabel);
 		panel.add(username);
@@ -147,7 +148,9 @@ public class ClientUI extends JFrame implements Event {
 		});
 		
 		panel.add(button);
+		
 		this.add(panel);
+		//username.requestFocusInWindow();
 	}
 	
 	void createPanelRoom() {

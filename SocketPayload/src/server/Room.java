@@ -352,11 +352,11 @@ public class Room implements AutoCloseable {
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ServerThread client = iter.next();
-			System.out.println(client.getClientName());
-			System.out.println(users);
+			//System.out.println(client.getClientName());
+			//System.out.println(users);
 			//users.indexOf(o)
 			if(users.contains(client.getClientName().toLowerCase())||client.getClientName().toLowerCase().equals(sender.getClientName())) {
-				System.out.println("1111111111111");
+				//System.out.println("1111111111111");
 				if(!sender.isMuted(client.getClientName())) {
 					boolean messageSent = client.send(sender.getClientName(), message);
 					if (!messageSent) {
