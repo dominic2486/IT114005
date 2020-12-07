@@ -134,7 +134,7 @@ public class Room implements AutoCloseable {
 				String part1 = comm[1];
 				String[] comm2 = part1.split(" ");
 				String command = comm2[0];
-				String clientName=comm2[1];
+				String clientName;
 				if (command != null) {
 					command = command.toLowerCase();
 				}
@@ -157,6 +157,7 @@ public class Room implements AutoCloseable {
 					Integer sidesOfDie=6;
 					String num = Integer.toString((int)((Math.random() * sidesOfDie)+1));
 					sendMessage(client, "<b>D: "+num+"</b>");
+					response="<b>D: "+num+"</b>";
 					break;
 
 				case "flip":
@@ -175,27 +176,10 @@ public class Room implements AutoCloseable {
 					clientName = comm2[1];
 					if(!client.isMuted(clientName))
 					{
-						client.mutesClients.add(clientName);
+						client.mutesClients.add(clientName.toLowerCase());
 						response = "muted "+clientName;
 					}
 					break;
-					//mute part1(username) from clients messages
-					//-search for clients with username
-
-					/*Iterator<ServerThread> iter = clients.iterator();
-					while (iter.hasNext()) {
-						ServerThread c = iter.next();
-						//boolean messageSent = c.sendConnectionStatus(client.getClientName(), isConnect, message);
-						String username=c.getClientName();
-						if (username.toLowerCase().equals(comm2[1].toLowerCase()))
-						{
-							client.muteClientFromThis(comm2[1]);
-						}
-
-
-					}
-					response = "muted"+comm2[1];*/
-					//client.muteClientFromThis(part1);
 				case "unmute":
 					clientName = comm2[1];
 					if(client.isMuted(clientName))
@@ -204,98 +188,84 @@ public class Room implements AutoCloseable {
 						response = "unmuted "+clientName;
 					}
 					break;
-
 				}
 			}else {
 				response=message;
 				if(response.indexOf("@") > -1) {
 					String temp=message;
-					List<String> users= new ArrayList<String>();
+					List<String> users= new ArrayList<String>(); 
 					while(temp.indexOf("@")>-1) {
 						String user = StringUtils.substringBetween(temp, "@", " ");
 						users.add(user);
 						temp=temp.replace("@"+user, "");
-						System.out.println(user);
-						
-						
 					}
-					//String mess = s1[s1.length-1];
-					//System.out.println(mess);
-					//mess += s1[0];
-					/*for (int i = 1; i < StringUtils.countMatches(response, "@"); i++) {
-						if (i % 2 == 0) {
-							users.add(s1[i]);
-						}
-						
-					}*/
 					response = temp;
 					sendPrivateMessage(client, response, users);
 					return null;
 					//response = mess;
 				}
 			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		if(response.indexOf("@@") > -1) {
-			String[] s1 = response.split("@@");
-			String mess = "";
-			mess += s1[0];
-			for (int i = 1; i < s1.length; i++) {
-				if (i % 2 == 0) {
-					mess += s1[i];
+			if(response.indexOf("%%") > -1) {
+				String[] s1 = response.split("%%");
+				String mess = "";
+				mess += s1[0];
+				for (int i = 1; i < s1.length; i++) {
+					if (i % 2 == 0) {
+						mess += s1[i];
+					}
+					else {
+						mess += "<b>" + s1[i] + "</b>";
+					}
 				}
-				else {
-					mess += "<b>" + s1[i] + "</b>";
-				}
-			}
-			response = mess;
-			//message=response;
-			//sendMessage(client, response);
+				response = mess;
+				//message=response;
+				//sendMessage(client, response);
 
-		}
-		if(response.indexOf("##") > -1) {
-			String[] s1 = response.split("##");
-			String mess = "";
-			mess += s1[0];
-			for (int i = 1; i < s1.length; i++) {
-				if (i % 2 == 0) {
-					mess += s1[i];
-				}
-				else {
-					mess += "<i>" + s1[i] + "</i>";
-				}
 			}
-			response = mess;	        
-		}
-		if(response.indexOf("!!") > -1) {
-			String[] s1 = response.split("!!");
-			String mess = "";
-			mess += s1[0];
-			for (int i = 1; i < s1.length; i++) {
-				if (i % 2 == 0) {
-					mess += s1[i];
+			if(response.indexOf("##") > -1) {
+				String[] s1 = response.split("##");
+				String mess = "";
+				mess += s1[0];
+				for (int i = 1; i < s1.length; i++) {
+					if (i % 2 == 0) {
+						mess += s1[i];
+					}
+					else {
+						mess += "<i>" + s1[i] + "</i>";
+					}
 				}
-				else {
-					mess += "<font color='red'>" + s1[i] + "</font>";
-				}
+				response = mess;	        
 			}
-			response = mess;	        
-		}
-		if (response.indexOf("__") > -1) {
-			String[] s1 = response.split("__");
-			String mess = "";
-			mess += s1[0];
-			for (int i = 1; i < s1.length; i++) {
-				if (i % 2 == 0) {
-					mess += s1[i];
+			if(response.indexOf("!!") > -1) {
+				String[] s1 = response.split("!!");
+				String mess = "";
+				mess += s1[0];
+				for (int i = 1; i < s1.length; i++) {
+					if (i % 2 == 0) {
+						mess += s1[i];
+					}
+					else {
+						mess += "<font color='red'>" + s1[i] + "</font>";
+					}
 				}
-				else {
-					mess += "<u>" + s1[i] + "</u>";
-				}
+				response = mess;	        
 			}
-			response = mess;
+			if (response.indexOf("__") > -1) {
+				String[] s1 = response.split("__");
+				String mess = "";
+				mess += s1[0];
+				for (int i = 1; i < s1.length; i++) {
+					if (i % 2 == 0) {
+						mess += s1[i];
+					}
+					else {
+						mess += "<u>" + s1[i] + "</u>";
+					}
+				}
+				response = mess;
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		return response;
