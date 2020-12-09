@@ -42,7 +42,8 @@ public class ClientUI extends JFrame implements Event {
 	RoomsPanel roomsPanel;
 	List<User> users = new ArrayList<User>();
 	JMenuBar menu;
-	
+	JTextField username;
+
 	Dimension windowSize = new Dimension(400, 400);
 	private final static Logger log = Logger.getLogger(ClientUI.class.getName());
 
@@ -52,11 +53,11 @@ public class ClientUI extends JFrame implements Event {
 		JMenu roomsMenu = new JMenu("Actions");
 		JMenuItem roomsSearch = new JMenuItem("Rooms");
 		roomsSearch.addActionListener(new ActionListener() {
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				//System.out.println("clicked Rooms");
 				goToPanel("rooms");
-		    }
+			}
 
 		});
 		roomsMenu.add(roomsSearch);
@@ -96,22 +97,23 @@ public class ClientUI extends JFrame implements Event {
 		JButton button = new JButton("Next");
 		button.addActionListener(new ActionListener() {
 
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				String _host = host.getText();
 				String _port = port.getText();
 				if (_host.length() > 0 && _port.length() > 0) {
-				    try {
+					try {
 						connect(_host, _port);
-						self.next();
-				    }
-				    catch (IOException e1) {
+						//self.next();
+						goToPanel("userInput");
+					}
+					catch (IOException e1) {
 						e1.printStackTrace();
 						log.log(Level.SEVERE, "Error connecting");
-				    }
+					}
 				}
-		    }
-	});
+			}
+		});
 		panel.add(button);
 		this.add(panel);
 	}
@@ -120,9 +122,9 @@ public class ClientUI extends JFrame implements Event {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		JLabel userLabel = new JLabel("Username:");
-		JTextField username = new JTextField();
-		//username.setFocusable(true);
-		
+		username = new JTextField();
+		username.setFocusable(true);
+
 		panel.add(userLabel);
 		panel.add(username);
 		JButton button = new JButton("Join");
@@ -131,8 +133,8 @@ public class ClientUI extends JFrame implements Event {
 			private static final long serialVersionUID = 1L;
 
 			public void actionPerformed(ActionEvent actionEvent) {
-		    	button.doClick();
-		    }
+				button.doClick();
+			}
 		});
 		button.addActionListener(new ActionListener() {
 
@@ -146,17 +148,17 @@ public class ClientUI extends JFrame implements Event {
 			}
 
 		});
-		
+
 		panel.add(button);
-		
-		this.add(panel);
+
+		this.add(panel, "userInput");
 		//username.requestFocusInWindow();
 	}
-	
+
 	void createPanelRoom() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-	
+
 		textArea = new JPanel();
 		textArea.setLayout(new BoxLayout(textArea, BoxLayout.Y_AXIS));
 		textArea.setAlignmentY(Component.BOTTOM_ALIGNMENT);
@@ -164,7 +166,7 @@ public class ClientUI extends JFrame implements Event {
 		scroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		scroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		panel.add(scroll, BorderLayout.CENTER);
-	
+
 		JPanel input = new JPanel();
 		input.setLayout(new BoxLayout(input, BoxLayout.X_AXIS));
 		JTextField text = new JTextField();
@@ -175,20 +177,20 @@ public class ClientUI extends JFrame implements Event {
 			private static final long serialVersionUID = 1L;
 
 			public void actionPerformed(ActionEvent actionEvent) {
-		    	button.doClick();
-		    }
+				button.doClick();
+			}
 		});
 
 		button.addActionListener(new ActionListener() {
-	
-		    @Override
-		    public void actionPerformed(ActionEvent e) {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				if (text.getText().length() > 0) {
-				    SocketClient.INSTANCE.sendMessage(text.getText());
-				    text.setText("");
+					SocketClient.INSTANCE.sendMessage(text.getText());
+					text.setText("");
 				}
-		    }
-	
+			}
+
 		});
 		input.add(button);
 		panel.add(input, BorderLayout.SOUTH);
@@ -208,14 +210,14 @@ public class ClientUI extends JFrame implements Event {
 		scroll.setPreferredSize(d);
 
 		textArea.getParent().getParent().getParent().add(scroll, BorderLayout.EAST);
-		
+
 	}
-	
+
 	void createRoomsPanel() {
 		roomsPanel = new RoomsPanel(this);
 		this.add(roomsPanel, "rooms");
 	}
-	
+
 	void addClient(String name) {
 		User u = new User(name);
 		Dimension p = new Dimension(userPanel.getSize().width, 30);
@@ -229,12 +231,12 @@ public class ClientUI extends JFrame implements Event {
 
 	void removeClient(User client) {
 		userPanel.remove(client);
-		
+
 		client.removeAll();
 		userPanel.revalidate();
 		userPanel.repaint();
 	}
-	
+
 	/***
 	 * Attempts to calculate the necessary dimensions for a potentially wrapped
 	 * string of text. This isn't perfect and some extra whitespace above or below
@@ -287,21 +289,29 @@ public class ClientUI extends JFrame implements Event {
 	void goToPanel(String panel) {
 		switch (panel) {
 		case "rooms":
-		    // TODO get rooms
-		    roomsPanel.removeAllRooms();
-		    SocketClient.INSTANCE.sendGetRooms(null);
-		    break;
+			// TODO get rooms
+			roomsPanel.removeAllRooms();
+			SocketClient.INSTANCE.sendGetRooms(null);
+			break;
 		default:
-		    // no need to react
-		    break;
+			// no need to react
+			break;
 		}
 		card.show(this.getContentPane(), panel);
+		switch (panel) {
+		case "userInput":
+			username.grabFocus();
+			break;
+		default:
+			// no need to react
+			break;
+		}
 	}
-	
+
 	void connect(String host, String port) throws IOException {
 		SocketClient.INSTANCE.registerCallbackListener(this);
 		SocketClient.INSTANCE.connectAndStart(host, port);
-}
+	}
 
 	void showUI() {
 		pack();
@@ -317,7 +327,7 @@ public class ClientUI extends JFrame implements Event {
 		log.log(Level.INFO, String.format("occ%s: %s", clientName, message));
 		addClient(clientName);
 		if (message != null && !message.trim().isEmpty()) {
-		    self.addMessage(String.format("%s: %s", clientName, message));
+			self.addMessage(String.format("%s: %s", clientName, message));
 		}
 	}
 
@@ -327,13 +337,13 @@ public class ClientUI extends JFrame implements Event {
 		//self.addMessage(String.format("%s: %s", clientName, message));
 		Iterator<User> iter = users.iterator();
 		while (iter.hasNext()) {
-		    User u = iter.next();
-		    if (u.getName() == clientName) {
+			User u = iter.next();
+			if (u.getName() == clientName) {
 				removeClient(u);
 				iter.remove();
 				self.addMessage(String.format("%s: %s", clientName, message));
 				break;
-		    }
+			}
 
 		}
 	}
@@ -343,11 +353,11 @@ public class ClientUI extends JFrame implements Event {
 		log.log(Level.INFO, String.format("%s: %s", clientName, message));
 		self.addMessage(String.format("%s: %s", clientName, message));
 	}
-	
+
 	public static void main(String[] args) {
 		ClientUI ui = new ClientUI("My UI");
 		if (ui != null) {
-		    log.log(Level.FINE, "Started");
+			log.log(Level.FINE, "Started");
 		}
 	}
 
@@ -355,11 +365,11 @@ public class ClientUI extends JFrame implements Event {
 	public void onChangeRoom() {
 		Iterator<User> iter = users.iterator();
 		while (iter.hasNext()) {
-		    User u = iter.next();
-		    removeClient(u);
-		    iter.remove();
+			User u = iter.next();
+			removeClient(u);
+			iter.remove();
 		}
-		
+
 	}
 
 	@Override
@@ -369,6 +379,6 @@ public class ClientUI extends JFrame implements Event {
 			roomsPanel.addRoom(roomName);
 			pack();
 		}
-		
+
 	}
 }

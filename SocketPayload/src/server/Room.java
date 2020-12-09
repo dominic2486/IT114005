@@ -20,14 +20,7 @@ public class Room implements AutoCloseable {
 	private final static String CREATE_ROOM = "createroom";
 	private final static String JOIN_ROOM = "joinroom";
 	private List<ServerThread> clients = new ArrayList<ServerThread>();
-	//private List<ClientPlayer> clients = new ArrayList<ClientPlayer>();
-	//static Dimension gameAreaSize = new Dimension(400, 600);
 
-	/*public Room(String name, boolean delayStart) {
-    	super(delayStart);
-    	this.name = name;
-    	isServer = true;
-    }*/
 
 	public Room(String name) {
 		this.name = name;
@@ -200,7 +193,6 @@ public class Room implements AutoCloseable {
 					response = temp;
 					sendPrivateMessage(client, response, users);
 					return null;
-					//response = mess;
 				}
 			}
 			if(response.indexOf("%%") > -1) {
@@ -216,9 +208,6 @@ public class Room implements AutoCloseable {
 					}
 				}
 				response = mess;
-				//message=response;
-				//sendMessage(client, response);
-
 			}
 			if(response.indexOf("##") > -1) {
 				String[] s1 = response.split("##");
@@ -311,12 +300,12 @@ public class Room implements AutoCloseable {
 		}
 
 	}
-	
-	
+
+
 	protected void sendPrivateMessage(ServerThread sender, String message, List<String> users) {
 		log.log(Level.INFO, getName() + ": Sending message to " + users.size() + " clients");
 		//List<String> noMessageList = sender.getMutedUsers();
-		
+
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ServerThread client = iter.next();
