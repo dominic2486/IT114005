@@ -57,6 +57,9 @@ public class SocketServer {
 		finally {
 			try {
 				isRunning = false;
+				for(Room i : rooms) {
+					i.saveServerMuted();
+				}
 				cleanup();
 				log.log(Level.INFO, "closing server socket");
 			}
