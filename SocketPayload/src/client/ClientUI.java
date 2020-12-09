@@ -31,9 +31,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
 public class ClientUI extends JFrame implements Event {
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
 	CardLayout card;
 	ClientUI self;
