@@ -47,11 +47,9 @@ public class Room implements AutoCloseable {
 		return name;
 	}
 
-
-
 	protected synchronized void addClient(ServerThread client) {
 		client.setCurrentRoom(this);
-		boolean exists = false;
+		//boolean exists = false;
 		//Iterator<>
 		if (clients.indexOf(client) > -1) {
 			log.log(Level.INFO, "Attempting to add a client that already exists");

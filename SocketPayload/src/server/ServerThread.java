@@ -247,7 +247,7 @@ public class ServerThread extends Thread {
     }
 
 	public boolean isMuted(String clientName) {
-		return mutesClients.contains(clientName);
+		return mutesClients.contains(clientName.toLowerCase());
 		
 	}
 
