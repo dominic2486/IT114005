@@ -185,7 +185,7 @@ public class ServerThread extends Thread {
     				&& (fromClient = (Payload) in.readObject()) != null // reads an object from inputStream (null would
     				// likely mean a disconnect)
     				) {
-    			System.out.println("Received from client: " + fromClient);
+    			//System.out.println("Received from client: " + fromClient);
     			processPayload(fromClient);
     		} // close while loop
     	}
