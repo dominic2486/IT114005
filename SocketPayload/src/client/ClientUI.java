@@ -7,6 +7,8 @@ import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 //import org.apache.commons.lang3.StringUtils;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -23,6 +26,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -190,7 +194,17 @@ public class ClientUI extends JFrame implements Event {
 			}
 
 		});
+		JButton saveButton = new JButton("Save Chat");
+		saveButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveMessages();
+			}
+
+		});
 		input.add(button);
+		input.add(saveButton);
 		panel.add(input, BorderLayout.SOUTH);
 		this.add(panel, "lobby");
 	}
@@ -209,6 +223,31 @@ public class ClientUI extends JFrame implements Event {
 
 		textArea.getParent().getParent().getParent().add(scroll, BorderLayout.EAST);
 
+	}
+	
+	void saveMessages()
+	{
+		try {
+			String filename = JOptionPane.showInputDialog(new JFrame(), "Enter the file name that you want");
+			//TODO add custom file name optionPane
+			if(filename==null)
+				filename = "output.txt";
+			else if(!filename.contains(".txt"))
+				filename+=".txt";
+			BufferedWriter output = new BufferedWriter(new FileWriter(filename));
+			//Object[] options = {"plaintext","html/text"};
+			int choice = JOptionPane.showConfirmDialog(null, "Do you want the chat saved as plaintext", "Save File", JOptionPane.YES_NO_OPTION);
+			for(Component i:textArea.getComponents()) {
+				if(choice==JOptionPane.YES_OPTION)
+					output.write(((JEditorPane) i).getText().replaceAll("\\<.*?\\>", "").trim()+'\n');
+				else
+					output.write(((JEditorPane) i).getText());
+			}
+			output.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
 	}
 
 	void createRoomsPanel() {

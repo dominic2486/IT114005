@@ -10,6 +10,7 @@ public class User extends JPanel {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	//possibly need to change to textpane with html allowance
 	private String name;
     private JTextField nameField;
 
