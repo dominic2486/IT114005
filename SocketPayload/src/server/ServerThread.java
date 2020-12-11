@@ -108,6 +108,14 @@ public class ServerThread extends Thread {
     	return sendPayload(payload);
     }
     
+    protected boolean sendIsMuted(String name) {
+    	Payload payload = new Payload();
+    	payload.setPayloadType(PayloadType.IS_MUTED);
+    	payload.setMessage(name);
+    	payload.setBoolean(isMuted(name));
+    	return sendPayload(payload);
+    }
+    
     private boolean sendPayload(Payload p) {
 		try {
 		    out.writeObject(p);

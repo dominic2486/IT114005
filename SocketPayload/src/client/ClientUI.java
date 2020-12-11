@@ -46,7 +46,7 @@ public class ClientUI extends JFrame implements Event {
 	JPanel userPanel;
 	RoomsPanel roomsPanel;
 	List<User> users = new ArrayList<User>();
-	List<String> mutedUsers = new ArrayList<String>();
+	//List<String> mutedUsers = new ArrayList<String>();
 	JMenuBar menu;
 	JTextField username;
 
@@ -439,5 +439,22 @@ public class ClientUI extends JFrame implements Event {
 			pack();
 		}
 
+	}
+	
+	public void onIsMuted(String clientName, boolean isMuted) {
+		Iterator<User> iter = users.iterator();
+		while (iter.hasNext()) {
+			User u = iter.next();
+			if (u.getName().equalsIgnoreCase(clientName)) {
+				if (isMuted) {
+					u.setName(String.format("<font color='red'>%s</font>", clientName));
+					System.out.println("yaahayhayh");
+				}
+				else {
+					u.setName(clientName);
+				}
+				break;
+			}
+		}
 	}
 }

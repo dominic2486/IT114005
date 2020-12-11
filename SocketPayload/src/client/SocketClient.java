@@ -16,299 +16,290 @@ import server.Payload;
 import server.PayloadType;
 
 public enum SocketClient {
-    INSTANCE; // see https://dzone.com/articles/java-singletons-using-enum "Making Singletons
-	      // with Enum"
+	INSTANCE; // see https://dzone.com/articles/java-singletons-using-enum "Making Singletons
+	// with Enum"
 
-    private static Socket server;
-    private static Thread fromServerThread;
-    private static Thread clientThread;
-    private static String clientName;
-    private static ObjectOutputStream out;
-    private final static Logger log = Logger.getLogger(SocketClient.class.getName());
-    private static List<Event> events = new ArrayList<Event>();// change from event to list<event>
+	private static Socket server;
+	private static Thread fromServerThread;
+	private static Thread clientThread;
+	private static String clientName;
+	private static ObjectOutputStream out;
+	private final static Logger log = Logger.getLogger(SocketClient.class.getName());
+	private static List<Event> events = new ArrayList<Event>();// change from event to list<event>
 
-    private Payload buildMessage(String message) {
+	private Payload buildMessage(String message) {
 		Payload payload = new Payload();
 		payload.setPayloadType(PayloadType.MESSAGE);
 		payload.setClientName(clientName);
 		payload.setMessage(message);
 		return payload;
-    }
-
-    private Payload buildConnectionStatus(String name, boolean isConnect) {
-	Payload payload = new Payload();
-	if (isConnect) {
-	    payload.setPayloadType(PayloadType.CONNECT);
 	}
-	else {
-	    payload.setPayloadType(PayloadType.DISCONNECT);
-	}
-	payload.setClientName(name);
-	return payload;
-    }
 
-    private void sendPayload(Payload p) {
+	private Payload buildConnectionStatus(String name, boolean isConnect) {
+		Payload payload = new Payload();
+		if (isConnect) {
+			payload.setPayloadType(PayloadType.CONNECT);
+		}
+		else {
+			payload.setPayloadType(PayloadType.DISCONNECT);
+		}
+		payload.setClientName(name);
+		return payload;
+	}
+
+	private void sendPayload(Payload p) {
 		try {
-		    out.writeObject(p);
+			out.writeObject(p);
 		}
 		catch (IOException e) {
-		    e.printStackTrace();
+			e.printStackTrace();
 		}
-    }
-
-    private void listenForServerMessage(ObjectInputStream in) {
-	if (fromServerThread != null) {
-	    log.log(Level.INFO, "Server Listener is likely already running");
-	    return;
 	}
-	// Thread to listen for responses from server so it doesn't block main thread
-	fromServerThread = new Thread() {
-	    @Override
-	    public void run() {
-		try {
-		    Payload fromServer;
-		    // while we're connected, listen for Payloads from server
-		    while (!server.isClosed() && (fromServer = (Payload) in.readObject()) != null) {
-		    	processPayload(fromServer);
-		    }
-		}
-		catch (Exception e) {
-		    if (!server.isClosed()) {
-		    	e.printStackTrace();
-			log.log(Level.INFO, "Server closed connection");
-		    }
-		    else {
-			log.log(Level.INFO, "Connection closed");
-		    }
-		}
-		finally {
-		    close();
-		    log.log(Level.INFO, "Stopped listening to server input");
-		}
-	    }
-	};
-	fromServerThread.start();// start the thread
-    }
 
-    private void sendOnClientConnect(String name, String message) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-		    Event e = iter.next();
-		    if (e != null) {
-			e.onClientConnect(name, message);
-		    }
+	private void listenForServerMessage(ObjectInputStream in) {
+		if (fromServerThread != null) {
+			log.log(Level.INFO, "Server Listener is likely already running");
+			return;
 		}
-    }
-
-    private void sendOnClientDisconnect(String name, String message) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-		    Event e = iter.next();
-		    if (e != null) {
-			e.onClientDisconnect(name, message);
-		    }
-		}
-    }
-
-    private void sendOnMessage(String name, String message) {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-		    Event e = iter.next();
-		    if (e != null) {
-			e.onMessageReceive(name, message);
-		    }
-		}
-    }
-
-    private void sendOnChangeRoom() {
-		Iterator<Event> iter = events.iterator();
-		while (iter.hasNext()) {
-		    Event e = iter.next();
-		    if (e != null) {
-			e.onChangeRoom();
-		    }
-		}
-    }
-
-    /*private void sendSyncDirection(String clientName, Point direction) {
-	Iterator<Event> iter = events.iterator();
-	while (iter.hasNext()) {
-	    Event e = iter.next();
-	    if (e != null) {
-		e.onSyncDirection(clientName, direction);
-	    }
+		// Thread to listen for responses from server so it doesn't block main thread
+		fromServerThread = new Thread() {
+			@Override
+			public void run() {
+				try {
+					Payload fromServer;
+					// while we're connected, listen for Payloads from server
+					while (!server.isClosed() && (fromServer = (Payload) in.readObject()) != null) {
+						processPayload(fromServer);
+					}
+				}
+				catch (Exception e) {
+					if (!server.isClosed()) {
+						e.printStackTrace();
+						log.log(Level.INFO, "Server closed connection");
+					}
+					else {
+						log.log(Level.INFO, "Connection closed");
+					}
+				}
+				finally {
+					close();
+					log.log(Level.INFO, "Stopped listening to server input");
+				}
+			}
+		};
+		fromServerThread.start();// start the thread
 	}
-    }
 
-    private void sendSyncPosition(String clientName, Point position) {
-	Iterator<Event> iter = events.iterator();
-	while (iter.hasNext()) {
-	    Event e = iter.next();
-	    if (e != null) {
-		e.onSyncPosition(clientName, position);
-	    }
-	}
-    }*/
-
-    private void sendRoom(String roomName) {
+	private void sendOnClientConnect(String name, String message) {
 		Iterator<Event> iter = events.iterator();
 		while (iter.hasNext()) {
-		    Event e = iter.next();
-		    if (e != null) {
-		    	e.onGetRoom(roomName);
-		    }
+			Event e = iter.next();
+			if (e != null) {
+				e.onClientConnect(name, message);
+			}
 		}
-    }
+	}
 
-    /***
-     * Determine any special logic for different PayloadTypes
-     * 
-     * @param p
-     */
-    private void processPayload(Payload p) {
+	private void sendOnClientDisconnect(String name, String message) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onClientDisconnect(name, message);
+			}
+		}
+	}
+
+	private void sendOnMessage(String name, String message) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onMessageReceive(name, message);
+			}
+		}
+	}
+	private void sendOnIsMuted(String name, Boolean message) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onIsMuted(name, message);
+			}
+		}
+	}
+	private void sendOnChangeRoom() {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onChangeRoom();
+			}
+		}
+	}
+
+	private void sendRoom(String roomName) {
+		Iterator<Event> iter = events.iterator();
+		while (iter.hasNext()) {
+			Event e = iter.next();
+			if (e != null) {
+				e.onGetRoom(roomName);
+			}
+		}
+	}
+
+	/***
+	 * Determine any special logic for different PayloadTypes
+	 * 
+	 * @param p
+	 */
+	private void processPayload(Payload p) {
 
 		switch (p.getPayloadType()) {
 		case CONNECT:
-		    sendOnClientConnect(p.getClientName(), p.getMessage());
-		    break;
+			sendOnClientConnect(p.getClientName(), p.getMessage());
+			break;
 		case DISCONNECT:
-		    sendOnClientDisconnect(p.getClientName(), p.getMessage());
-		    break;
+			sendOnClientDisconnect(p.getClientName(), p.getMessage());
+			break;
 		case MESSAGE:
-		    sendOnMessage(p.getClientName(), p.getMessage());
-		    break;
+			sendOnMessage(p.getClientName(), p.getMessage());
+			break;
+		case IS_MUTED:
+			sendOnIsMuted(p.getMessage(), p.getBoolean());
+			break;
 		case CLEAR_PLAYERS:
-		    sendOnChangeRoom();
-		    break;
+			sendOnChangeRoom();
+			break;
 		case GET_ROOMS:
-		    // reply from ServerThread
-		    sendRoom(p.getMessage());
-		    break;
+			// reply from ServerThread
+			sendRoom(p.getMessage());
+			break;
 		default:
-		    log.log(Level.WARNING, "unhandled payload on client" + p);
-		    break;
-	
+			log.log(Level.WARNING, "unhandled payload on client" + p);
+			break;
+
 		}
-    }
-
-    // TODO Start public methods here
-
-    public void registerCallbackListener(Event e) {
-	events.add(e);
-	log.log(Level.INFO, "Attached listener");
-    }
-
-    public void removeCallbackListener(Event e) {
-	events.remove(e);
-    }
-
-    public boolean connectAndStart(String address, String port) throws IOException {
-	if (connect(address, port)) {
-	    return start();
 	}
-	return false;
-    }
 
-    public boolean connect(String address, String port) {
-		try {
-		    server = new Socket(address, Integer.parseInt(port));
-		    log.log(Level.INFO, "Client connected");
-		    return true;
-		}
-		catch (UnknownHostException e) {
-		    e.printStackTrace();
-		}
-		catch (IOException e) {
-		    e.printStackTrace();
+	// TODO Start public methods here
+
+	public void registerCallbackListener(Event e) {
+		events.add(e);
+		log.log(Level.INFO, "Attached listener");
+	}
+
+	public void removeCallbackListener(Event e) {
+		events.remove(e);
+	}
+
+	public boolean connectAndStart(String address, String port) throws IOException {
+		if (connect(address, port)) {
+			return start();
 		}
 		return false;
-    }
+	}
 
-    public void setUsername(String username) {
-    	clientName = username;
+	public boolean connect(String address, String port) {
+		try {
+			server = new Socket(address, Integer.parseInt(port));
+			log.log(Level.INFO, "Client connected");
+			return true;
+		}
+		catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public void setUsername(String username) {
+		clientName = username;
 		sendPayload(buildConnectionStatus(clientName, true));
-    }
+	}
 
-    public void sendMessage(String message) {
-    	sendPayload(buildMessage(message));
-    }
+	public void sendMessage(String message) {
+		sendPayload(buildMessage(message));
+	}
 
-    public void sendCreateRoom(String room) {
+	public void sendCreateRoom(String room) {
 		Payload p = new Payload();
 		p.setPayloadType(PayloadType.CREATE_ROOM);
 		p.setMessage(room);
 		sendPayload(p);
-    }
+	}
 
-    public void sendJoinRoom(String room) {
+	public void sendJoinRoom(String room) {
 		Payload p = new Payload();
 		p.setPayloadType(PayloadType.JOIN_ROOM);
 		p.setMessage(room);
 		sendPayload(p);
-    }
+	}
 
-    public void sendGetRooms(String query) {
+	public void sendGetRooms(String query) {
 		Payload p = new Payload();
 		p.setPayloadType(PayloadType.GET_ROOMS);
 		p.setMessage(query);
 		sendPayload(p);
-    }
-
-    public boolean start() throws IOException {
-	if (server == null) {
-	    log.log(Level.WARNING, "Server is null");
-	    return false;
 	}
-	if (clientThread != null && clientThread.isAlive()) {
-	    log.log(Level.SEVERE, "Client thread is already active");
-	    return false;
-	}
-	if (clientThread != null) {
-	    clientThread.interrupt();
-	    clientThread = null;
-	}
-	log.log(Level.INFO, "Client Started");
-	clientThread = new Thread() {
-	    @Override
-	    public void run() {
 
-		// listen to console, server in, and write to server out
-		try (ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
-			ObjectInputStream in = new ObjectInputStream(server.getInputStream());) {
-		    SocketClient.out = out;
-
-		    // starts new thread
-		    listenForServerMessage(in);
-
-		    // Keep main thread alive until the socket is closed
-		    // initialize/do everything before this line
-		    // (Without this line the program would stop after the first message
-		    while (!server.isClosed()) {
-			Thread.sleep(50);
-		    }
-		    log.log(Level.INFO, "Client Thread stopping");
+	public boolean start() throws IOException {
+		if (server == null) {
+			log.log(Level.WARNING, "Server is null");
+			return false;
 		}
-		catch (Exception e) {
-		    e.printStackTrace();
+		if (clientThread != null && clientThread.isAlive()) {
+			log.log(Level.SEVERE, "Client thread is already active");
+			return false;
 		}
-		finally {
-		    close();
+		if (clientThread != null) {
+			clientThread.interrupt();
+			clientThread = null;
 		}
-	    }
-	};
-	clientThread.start();
-	return true;
-    }
+		log.log(Level.INFO, "Client Started");
+		clientThread = new Thread() {
+			@Override
+			public void run() {
 
-    public void close() {
-	if (server != null && !server.isClosed()) {
-	    try {
-		server.close();
-		log.log(Level.INFO, "Closed Socket");
-	    }
-	    catch (IOException e) {
-		e.printStackTrace();
-	    }
+				// listen to console, server in, and write to server out
+				try (ObjectOutputStream out = new ObjectOutputStream(server.getOutputStream());
+						ObjectInputStream in = new ObjectInputStream(server.getInputStream());) {
+					SocketClient.out = out;
+
+					// starts new thread
+					listenForServerMessage(in);
+
+					// Keep main thread alive until the socket is closed
+					// initialize/do everything before this line
+					// (Without this line the program would stop after the first message
+					while (!server.isClosed()) {
+						Thread.sleep(50);
+					}
+					log.log(Level.INFO, "Client Thread stopping");
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
+				finally {
+					close();
+				}
+			}
+		};
+		clientThread.start();
+		return true;
 	}
-    }
+
+	public void close() {
+		if (server != null && !server.isClosed()) {
+			try {
+				server.close();
+				log.log(Level.INFO, "Closed Socket");
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

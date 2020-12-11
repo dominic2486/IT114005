@@ -53,4 +53,12 @@ public class Payload implements Serializable {
     	return String.format("Type[%s], Number[%s], Message[%s]", getPayloadType().toString(), getNumber(),
 		getMessage());
     }
+    private boolean tester=true;
+	public Boolean getBoolean() {
+		return tester;
+	}
+	public void setBoolean(boolean setter)
+	{
+		tester=setter;
+	}
 }
