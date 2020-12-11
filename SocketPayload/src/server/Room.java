@@ -1,7 +1,11 @@
 package server;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +23,7 @@ public class Room implements AutoCloseable {
 	private final static String COMMAND_TRIGGER = "/";
 	private final static String CREATE_ROOM = "createroom";
 	private final static String JOIN_ROOM = "joinroom";
+	private final static String SAVE_MUTED = "savemuted";
 	private List<ServerThread> clients = new ArrayList<ServerThread>();
 
 
@@ -48,6 +53,22 @@ public class Room implements AutoCloseable {
 			log.log(Level.INFO, "Attempting to add a client that already exists");
 		}
 		else {
+			//imports the clients muted list if it exists
+			try {
+				Scanner in = new Scanner(new FileReader(client.getClientName()+"MutedList.txt"));
+				//System.out.println("sdfsdf");
+				while(in.hasNext())
+				{
+					//System.out.println(client.getClientName()+"MutedList.txt");
+					String name = in.nextLine();
+					client.mutesClients.add(name);
+					client.sendIsMuted(name);
+					//System.out.println(name);
+				}
+				in.close();
+			}catch (Exception e){
+				
+			}
 			clients.add(client);
 			if (client.getClientName() != null) {
 				client.sendClearList();
@@ -56,19 +77,23 @@ public class Room implements AutoCloseable {
 			}
 		}
 	}
-
-	@SuppressWarnings("unused")
+	
 	private void updateClientList(ServerThread client) {
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ServerThread c = iter.next();
 			if (c != client) {
+				@SuppressWarnings("unused")
 				boolean messageSent = client.sendConnectionStatus(c.getClientName(), true, null);
+				client.sendIsMuted(c.getClientName().toLowerCase());
+				c.sendIsMuted(client.getClientName().toLowerCase());
+				
 			}
 		}
 	}
 
 	protected synchronized void removeClient(ServerThread client) {
+		//saveMuted(client);
 		clients.remove(client);
 		if (clients.size() > 0) {
 			//sendMessage(client, "left the room");
@@ -99,6 +124,7 @@ public class Room implements AutoCloseable {
 
 	protected void joinLobby(ServerThread client) {
 		server.joinLobby(client);
+		updateClientList(client);
 	}
 
 	protected void createRoom(String room, ServerThread client) {
@@ -118,6 +144,7 @@ public class Room implements AutoCloseable {
 	private String processCommands(String message, ServerThread client) {
 		//boolean wasCommand = false;
 		String response = null;
+		//updateClientList(client);
 		try {
 			if (message.indexOf(COMMAND_TRIGGER) > -1) {
 				String[] comm = message.split(COMMAND_TRIGGER);
@@ -136,6 +163,7 @@ public class Room implements AutoCloseable {
 					/*if (server.createNewRoom(roomName)) {
 				    	joinRoom(roomName, client);
 				    }*/
+					
 					createRoom(roomName, client);
 					response = "Created room "+ roomName;
 					break;
@@ -143,6 +171,11 @@ public class Room implements AutoCloseable {
 					roomName = comm2[1];
 					joinRoom(roomName, client);
 					response = "Joined room "+ roomName;
+					break;
+				case SAVE_MUTED:
+					saveMuted(client);
+					
+					response = "Saved "+client.getClientName()+" muted list";
 					break;
 				case "roll":
 					Integer sidesOfDie=6;
@@ -169,14 +202,16 @@ public class Room implements AutoCloseable {
 					{
 						client.mutesClients.add(clientName.toLowerCase());
 						response = "muted "+clientName;
+						client.sendIsMuted(clientName);
 					}
 					break;
 				case "unmute":
 					clientName = comm2[1];
 					if(client.isMuted(clientName))
 					{
-						client.mutesClients.remove(clientName);
+						client.mutesClients.remove(clientName.toLowerCase());
 						response = "unmuted "+clientName;
+						client.sendIsMuted(clientName);
 					}
 					break;
 				}
@@ -258,10 +293,41 @@ public class Room implements AutoCloseable {
 		return response;
 	}
 
+	
+	/****
+	 * Method saves the muted list of @parm client
+	 */
+	private void saveMuted(ServerThread client) {
+		try {
+			BufferedWriter output = new BufferedWriter(new FileWriter(client.getClientName()+"MutedList.txt"));
+			for(ServerThread i:clients) {
+				if(client.isMuted(i.getClientName())) {
+					output.write(i.getClientName()+'\n');
+				}
+			}
+			output.close();
+		}catch(Exception e) {
+
+		}
+	}
+	
+	/****
+	 * Helper function:
+	 * Allow Socketserver to auto save users muted lists automatically if server closes before they leave
+	 */
+	public void saveServerMuted()
+	{
+		for(ServerThread i:clients) {
+			saveMuted(i);
+		}
+	}
+	
 	protected void sendConnectionStatus(ServerThread client, boolean isConnect, String message) {
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ServerThread c = iter.next();
+			//client.sendIsMuted(c.getClientName());
+			//c.sendIsMuted(client.getClientName());
 			boolean messageSent = c.sendConnectionStatus(client.getClientName(), isConnect, message);
 			if (!messageSent) {
 				iter.remove();
@@ -309,11 +375,7 @@ public class Room implements AutoCloseable {
 		Iterator<ServerThread> iter = clients.iterator();
 		while (iter.hasNext()) {
 			ServerThread client = iter.next();
-			//System.out.println(client.getClientName());
-			//System.out.println(users);
-			//users.indexOf(o)
 			if(users.contains(client.getClientName().toLowerCase())||client.getClientName().toLowerCase().equals(sender.getClientName())) {
-				//System.out.println("1111111111111");
 				if(!sender.isMuted(client.getClientName())) {
 					boolean messageSent = client.send(sender.getClientName(), message);
 					if (!messageSent) {

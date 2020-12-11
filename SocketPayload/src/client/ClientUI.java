@@ -7,6 +7,10 @@ import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 //import org.apache.commons.lang3.StringUtils;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
@@ -23,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -31,16 +37,16 @@ import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 
 public class ClientUI extends JFrame implements Event {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 1L;
+	boolean saveOnCloseTester=true;
 	CardLayout card;
 	ClientUI self;
 	JPanel textArea;
 	JPanel userPanel;
 	RoomsPanel roomsPanel;
 	List<User> users = new ArrayList<User>();
+	//List<String> mutedUsers = new ArrayList<String>();
 	JMenuBar menu;
 	JTextField username;
 
@@ -77,9 +83,29 @@ public class ClientUI extends JFrame implements Event {
 		createPanelRoom();
 		createPanelUserList();
 		this.setJMenuBar(menu);
-		// TODO remove
 		createRoomsPanel();
+		addWindowListener(new WindowAdapter(){
+
+			public void windowClosing(WindowEvent evt) {
+				ClientUI.this.exitForm(evt);
+			}
+		});
 		showUI();
+	}
+
+
+	/*
+	 * Method is called when the jframe is being closed
+	 */
+	protected void exitForm(WindowEvent evt) {
+		SocketClient.INSTANCE.sendMessage("/savemuted");
+		if(saveOnCloseTester) {
+			int choice = JOptionPane.showConfirmDialog(null, "Do you want to save chat before leaving?", "Save Chat History?", JOptionPane.YES_NO_OPTION);
+			if(choice==JOptionPane.YES_OPTION) {
+				saveMessages();
+			}				
+		}
+		return;
 	}
 
 	void createConnectionScreen() {
@@ -192,7 +218,17 @@ public class ClientUI extends JFrame implements Event {
 			}
 
 		});
+		JButton saveButton = new JButton("Save Chat");
+		saveButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				saveMessages();
+			}
+
+		});
 		input.add(button);
+		input.add(saveButton);
 		panel.add(input, BorderLayout.SOUTH);
 		this.add(panel, "lobby");
 	}
@@ -210,6 +246,29 @@ public class ClientUI extends JFrame implements Event {
 		scroll.setPreferredSize(d);
 
 		textArea.getParent().getParent().getParent().add(scroll, BorderLayout.EAST);
+
+	}
+
+	void saveMessages()
+	{
+		try {
+			String filename = JOptionPane.showInputDialog(new JFrame(), "Enter the file name that you want");
+			if(filename==null)
+				filename = "output.txt";
+			else if(!filename.contains(".txt"))
+				filename+=".txt";
+			BufferedWriter output = new BufferedWriter(new FileWriter(filename));
+			int choice = JOptionPane.showConfirmDialog(null, "Do you want the chat saved as plaintext (otherwise it saves the html/text)", "Save File", JOptionPane.YES_NO_OPTION);
+			for(Component i:textArea.getComponents()) {
+				if(choice==JOptionPane.YES_OPTION)
+					output.write(((JEditorPane) i).getText().replaceAll("\\<.*?\\>", "").trim()+'\n');
+				else
+					output.write(((JEditorPane) i).getText());
+			}
+			output.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
 	}
 
@@ -254,7 +313,7 @@ public class ClientUI extends JFrame implements Event {
 		final float PADDING_PERCENT = 1.1f;
 		// calculate modifier to line wrapping so we can display the wrapped message
 		int mult = (int) Math.floor(size.width / (textArea.getSize().width * PADDING_PERCENT));
-		// System.out.println(mult);
+		//System.out.println(mult);
 		mult++;
 		return size.height * mult;
 	}
@@ -289,7 +348,7 @@ public class ClientUI extends JFrame implements Event {
 	void goToPanel(String panel) {
 		switch (panel) {
 		case "rooms":
-			// TODO get rooms
+			// get rooms
 			roomsPanel.removeAllRooms();
 			SocketClient.INSTANCE.sendGetRooms(null);
 			break;
@@ -380,5 +439,22 @@ public class ClientUI extends JFrame implements Event {
 			pack();
 		}
 
+	}
+	
+	public void onIsMuted(String clientName, boolean isMuted) {
+		Iterator<User> iter = users.iterator();
+		while (iter.hasNext()) {
+			User u = iter.next();
+			if (u.getName().equalsIgnoreCase(clientName)) {
+				if (isMuted) {
+					u.setName(String.format("<font color='red'>%s</font>", clientName));
+					System.out.println("yaahayhayh");
+				}
+				else {
+					u.setName(clientName);
+				}
+				break;
+			}
+		}
 	}
 }
