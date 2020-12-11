@@ -53,6 +53,7 @@ public class Room implements AutoCloseable {
 			log.log(Level.INFO, "Attempting to add a client that already exists");
 		}
 		else {
+			//imports the clients muted list if it exists
 			try {
 				Scanner in = new Scanner(new FileReader(client.getClientName()+"MutedList.txt"));
 				while(in.hasNext())
@@ -279,6 +280,10 @@ public class Room implements AutoCloseable {
 		return response;
 	}
 
+	
+	/****
+	 * Method saves the muted list of @parm client
+	 */
 	private void saveMuted(ServerThread client) {
 		try {
 			BufferedWriter output = new BufferedWriter(new FileWriter(client.getClientName()+"MutedList.txt"));
@@ -292,7 +297,11 @@ public class Room implements AutoCloseable {
 
 		}
 	}
-
+	
+	/****
+	 * Helper function:
+	 * Allow Socketserver to auto save users muted lists automatically when server is closing
+	 */
 	public void saveServerMuted()
 	{
 		for(ServerThread i:clients) {

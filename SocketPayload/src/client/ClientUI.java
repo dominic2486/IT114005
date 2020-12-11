@@ -39,7 +39,7 @@ import javax.swing.ScrollPaneConstants;
 public class ClientUI extends JFrame implements Event {
 
 	private static final long serialVersionUID = 1L;
-	boolean saveOnCloseTester=false;
+	boolean saveOnCloseTester=true;
 	CardLayout card;
 	ClientUI self;
 	JPanel textArea;
@@ -258,8 +258,7 @@ public class ClientUI extends JFrame implements Event {
 			else if(!filename.contains(".txt"))
 				filename+=".txt";
 			BufferedWriter output = new BufferedWriter(new FileWriter(filename));
-			//Object[] options = {"plaintext","html/text"};
-			int choice = JOptionPane.showConfirmDialog(null, "Do you want the chat saved as plaintex(otherwise it saves the html/text)", "Save File", JOptionPane.YES_NO_OPTION);
+			int choice = JOptionPane.showConfirmDialog(null, "Do you want the chat saved as plaintext (otherwise it saves the html/text)", "Save File", JOptionPane.YES_NO_OPTION);
 			for(Component i:textArea.getComponents()) {
 				if(choice==JOptionPane.YES_OPTION)
 					output.write(((JEditorPane) i).getText().replaceAll("\\<.*?\\>", "").trim()+'\n');
